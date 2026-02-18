@@ -1,0 +1,59 @@
+These are my current thoughts on how we can structure the backend before we start building more heavily. 
+
+High-Level Flow:
+
+User -> Frontend -> Backend API -> Database
+
+The backend should manage agent state and logs so everything stays consistent. The frontend should only talk to the backend through the endpoints. If we add ML later for risk scoring or anomaly detection, it can plug into the backend without changing the structure.
+
+Structure:
+
+I think we should keep a simple layered layout:
+
+api/ for routes
+services/ for business logic
+models/ for database entities
+schemas/ for request and response validation
+core/ for shared configuration and utilities
+
+This keeps routing separate from logic and keeps database code out of the API layer. It also makes it easier for multiple people to work without stepping on each other. Pretty basic layout maybe should add more expansive folders if needed
+
+Scope:
+
+For the first working iteration, the backend should support:
+
+Creating agents
+
+Listing agents
+
+Logging agent activity
+
+Disabling an agent
+
+Retrieving logs
+
+Anything beyond that like policy or analytics can wait. We need a working end to end system before any advanced talks/implementations can happen.
+
+Database:
+
+A relational database makes the most sense for now. Agents and logs obviously have a relationship. There is no strong need for NoSQL or vector storage at this early iteration stage.
+
+API Draft:
+
+Possible initial endpoints:
+
+GET /health
+GET /agents
+POST /agents
+POST /agents/{id}/disable
+GET /agents/{id}/logs
+
+This gives the frontend something clear to build with.
+
+Still For Discussion...
+
+- Final backend framework
+
+- Deployment
+
+- Tech-Stack
