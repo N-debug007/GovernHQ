@@ -1,3 +1,3 @@
 """
-Backend application package.
+Main backend folder for the project.
 """
