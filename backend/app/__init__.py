@@ -1,3 +1,3 @@
 """
-Main backend folder for the project.
+Backend structure for GovernHQ
 """
