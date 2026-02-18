@@ -1,1 +1,2 @@
-
+# Backend dependencies will be added after team meeting
+# (FastAPI, Express, etc.)
