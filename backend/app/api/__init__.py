@@ -1,1 +1,3 @@
-
+"""
+This folder will contain the API endpoints.
+"""
