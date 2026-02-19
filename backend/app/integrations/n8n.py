@@ -1,6 +1,4 @@
 """
-n8n integration placeholder.
-
 This is where we would translate n8n webhook data into
 our internal event format so the rest of the backend stays consistent.
 """
