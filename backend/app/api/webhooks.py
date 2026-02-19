@@ -1,16 +1,15 @@
 """
-Webhook entrypoints for orchestrator agents (n8n, Zapier).
-External workflows send events here.
-We forward them into the ingestion pipeline so everything gets logged consistently.
+Webhook endpoints for orchestrator-based agents like n8n and Zapier.
+These are entry points where external workflows can send activity events.
+We’ll pass those events into the ingestion pipeline so everything gets logged the same way.
 """
 
 def n8n_webhook(payload: dict):
-    # Receives events from n8n workflows
-    # Later: call ingest_event(source="n8n", payload=payload)
+    # Event coming from an n8n workflow
+    # Later this will be forwarded to the ingest service
     pass
 
 def zapier_webhook(payload: dict):
-    # Receives events from Zapier workflows
-    # Later: call ingest_event(source="zapier", payload=payload)
+    # Event coming from a Zapier workflow
+    # Same handling as n8n, just a different source
     pass
-
