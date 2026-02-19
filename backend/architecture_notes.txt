@@ -1,59 +1,57 @@
-These are my current thoughts on how we can structure the backend before we start building more heavily. 
+These are current thoughts on how we can structure the backend before building heavily.
 
-High-Level Flow:
-
+High-Level Flow
+---------------
 User -> Frontend -> Backend API -> Database
 
-The backend should manage agent state and logs so everything stays consistent. The frontend should only talk to the backend through the endpoints. If we add ML later for risk scoring or anomaly detection, it can plug into the backend without changing the structure.
+The backend should be the source of the agent state and logs so everything stays consistent.
+The frontend should only talk to the backend through API endpoints.
+If we add ML later for risk scoring or anomaly detection, it should plug into the backend without changing the overall structure.
 
-Structure:
+Proposed Backend Structure
+--------------------------
+Keep a simple layered layout:
 
-I think we should keep a simple layered layout:
+- api/      Routes and endpoint definitions
+- services/ Business logic and use cases
+- models/   Database entities (ORM models)
+- schemas/  Request/response validation and serialization
+- core/     Shared configuration and utilities
 
-api/ for routes
-services/ for business logic
-models/ for database entities
-schemas/ for request and response validation
-core/ for shared configuration and utilities
+This keeps routing separate from logic and keeps database code out of the API layer.
+It should also make it easier for multiple people to work without stepping on each other.
+We can add more folders later only if the scope grows.
 
-This keeps routing separate from logic and keeps database code out of the API layer. It also makes it easier for multiple people to work without stepping on each other. Pretty basic layout maybe should add more expansive folders if needed
-
-Scope:
-
+Scope (Iteration 1)
+-------------------
 For the first working iteration, the backend should support:
 
-Creating agents
+- Create agents
+- List agents
+- Log agent activity
+- Disable an agent
+- Retrieve logs for an agent
 
-Listing agents
+Anything beyond this (policy enforcement, analytics, dashboards, anomaly detection) can wait.
+Priority is a working end-to-end system before advanced features.
 
-Logging agent activity
+Database
+--------
+A relational database makes the most sense for now.
+Agents and logs clearly have a relationship, and we do not need NoSQL or vector storage at this stage.
 
-Disabling an agent
+API Draft (Initial Endpoints)
+-----------------------------
+- GET  /health
+- GET  /agents
+- POST /agents
+- POST /agents/{id}/disable
+- GET  /agents/{id}/logs
 
-Retrieving logs
+This gives the frontend a clear contract to build against.
 
-Anything beyond that like policy or analytics can wait. We need a working end to end system before any advanced talks/implementations can happen.
-
-Database:
-
-A relational database makes the most sense for now. Agents and logs obviously have a relationship. There is no strong need for NoSQL or vector storage at this early iteration stage.
-
-API Draft:
-
-Possible initial endpoints:
-
-GET /health
-GET /agents
-POST /agents
-POST /agents/{id}/disable
-GET /agents/{id}/logs
-
-This gives the frontend something clear to build with.
-
-Still For Discussion...
-
+Still To Decide
+---------------
 - Final backend framework
-
-- Deployment
-
-- Tech-Stack
+- Deployment approach
+- Tech stack choices
