@@ -1,10 +1,13 @@
 """
+Backend entry point.
 
-Will act as the main application Backend entry point.
-Exact framework (FastAPI, Express, etc.) will be decided during this weekends meeting.
+This is where the server will be initialized once we pick a framework
+(e.g., FastAPI).
+
+- start the app
+- register API routes
 """
 
-# TODO:
-# - Decide framework
-# - Define how routes are registered
-# - Define how configuration is loaded
+def start():
+    # Placeholder so the project has a clear entry point
+    print("GovernHQ backend started")
