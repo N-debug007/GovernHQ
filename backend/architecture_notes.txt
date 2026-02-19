@@ -4,8 +4,15 @@ High-Level Flow
 ---------------
 User -> Frontend -> Backend API -> Database
 
-The backend should be the source of the agent state and logs so everything stays consistent.
+The backend should be for agent state and logs so everything stays consistent.
 The frontend should only talk to the backend through API endpoints.
+
+Agent activity may come from two places:
+- Orchestrator workflows (n8n, Zapier, etc.) via webhooks
+- Fully autonomous agents running inside the backend
+
+Regardless of the source, all activity should pass through the same ingestion flow so logging and future policy checks stay consistent.
+
 If we add ML later for risk scoring or anomaly detection, it should plug into the backend without changing the overall structure.
 
 Proposed Backend Structure
@@ -13,10 +20,11 @@ Proposed Backend Structure
 Keep a simple layered layout:
 
 - api/      Routes and endpoint definitions
-- services/ Business logic and use cases
+- services/ Business logic and ingestion flow
 - models/   Database entities (ORM models)
 - schemas/  Request/response validation and serialization
 - core/     Shared configuration and utilities
+- integrations/ Source-specific adapters
 
 This keeps routing separate from logic and keeps database code out of the API layer.
 It should also make it easier for multiple people to work without stepping on each other.
@@ -32,13 +40,16 @@ For the first working iteration, the backend should support:
 - Disable an agent
 - Retrieve logs for an agent
 
+For orchestrator-driven agents, activity will enter through webhook endpoints.
+For autonomous agents, activity can be emitted internally but will still follow the same ingestion pipeline.
+
 Anything beyond this (policy enforcement, analytics, dashboards, anomaly detection) can wait.
-Priority is a working end-to-end system before advanced features.
+Priority should be a working end-to-end system before advanced features.
 
 Database
 --------
 A relational database makes the most sense for now.
-Agents and logs clearly have a relationship, and we do not need NoSQL or vector storage at this stage.
+Agents and logs clearly have a relationship, and there is no strong need for NoSQL or vector storage at this stage.
 
 API Draft (Initial Endpoints)
 -----------------------------
@@ -48,10 +59,12 @@ API Draft (Initial Endpoints)
 - POST /agents/{id}/disable
 - GET  /agents/{id}/logs
 
+Webhook endpoints for orchestrator integrations can be added alongside these once ingestion is wired.
+
 This gives the frontend a clear contract to build against.
 
 Still To Decide
 ---------------
 - Final backend framework
-- Deployment approach
-- Tech stack choices
+- Deployment 
+- Tech stack 
