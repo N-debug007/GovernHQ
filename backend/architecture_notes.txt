@@ -20,7 +20,7 @@ Ingestion Pipeline
 All events pass through an ingestion flow so logging stays consistent.
 
 Flow
-Webhook or internal event → normalize → validate → policy check → store log
+Webhook or internal event → normalize → validate → policy check (pbly later iteration) → store log
 
 Where this happens
 
