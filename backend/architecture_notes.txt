@@ -41,7 +41,7 @@ For the first working iteration, the backend should support:
 - Retrieve logs for an agent
 
 For orchestrator-driven agents, activity will enter through webhook endpoints.
-For autonomous agents, activity can be emitted internally but will still follow the same ingestion pipeline.
+For autonomous agents, activity can be handled internally but will still follow the same ingestion pipeline.
 
 Anything beyond this (policy enforcement, analytics, dashboards, anomaly detection) can wait.
 Priority should be a working end-to-end system before advanced features.
