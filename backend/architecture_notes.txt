@@ -17,7 +17,7 @@ If we add ML later for risk scoring or anomaly detection, it should plug into th
 
 Proposed Backend Structure
 --------------------------
-Keep a simple layered layout:
+Very simple layout:
 
 - api/      Routes and endpoint definitions
 - services/ Business logic and ingestion flow
