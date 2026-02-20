@@ -1,6 +1,6 @@
 These are current thoughts on how we can structure the backend before building heavily.
 
-High-Level Flow
+High-Level Ingestion Flow
 ---------------
 User -> Frontend -> Backend API -> Database
 
@@ -15,20 +15,37 @@ Regardless of the source, all activity should pass through the same ingestion fl
 
 If we add ML later for risk scoring or anomaly detection, it should plug into the backend without changing the overall structure.
 
+Ingestion Pipeline 
+------------------------------
+All events pass through an ingestion flow so logging stays consistent.
+
+Flow
+Webhook or internal event → normalize → validate → policy check → store log
+
+Where this happens
+
+- api/webhooks.py receives orchestrator events
+- services/ingest.py coordinates the flow
+- integrations/ maps Zapier and n8n payloads to our format
+- services/normalize.py converts events into a standard ActionEvent
+- services/policy.py placeholder for future checks
+- services/ledger.py writes logs to the database
+
+This keeps everything consistent and makes it easier to track what agents are doing later.
+
 Proposed Backend Structure
 --------------------------
 Very simple layout:
 
-- api/      Routes and endpoint definitions
-- services/ Business logic and ingestion flow
-- models/   Database entities (ORM models)
-- schemas/  Request/response validation and serialization
-- core/     Shared configuration and utilities
-- integrations/ Source-specific adapters
+- api/ routes and endpoints
+- services/ core logic and ingestion flow
+- models/ database tables and entities
+- schemas/ request and response validation
+- core/ holds shared configuration and utilities (environment variables, API keys, etc)
+- integrations/ adapters for Zapier, n8n, and other sources
 
-This keeps routing separate from logic and keeps database code out of the API layer.
-It should also make it easier for multiple people to work without stepping on each other.
-We can add more folders later only if the scope grows.
+This keeps routes separate from logic and prevents database code from living inside endpoints.
+It also makes it easier for multiple people to work at the same time without conflicts.
 
 Scope (Iteration 1)
 -------------------
