@@ -1,6 +1,6 @@
 These are current thoughts on how we can structure the backend before building heavily.
 
-High-Level Ingestion Flow
+High-Level Flow
 ---------------
 User -> Frontend -> Backend API -> Database
 
