@@ -16,7 +16,6 @@ export function Login({ onSignupClick }: LoginProps) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Keeping this for now 
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,8 +26,10 @@ export function Login({ onSignupClick }: LoginProps) {
     try {
       if (!email || !password) {
         setError("Please fill in all fields");
+        setIsLoading(false); 
         return;
       }
+
       await login(email, password);
     } catch (err) {
       setError("Login failed. Please try again.");
@@ -38,13 +39,13 @@ export function Login({ onSignupClick }: LoginProps) {
   };
 
   const handleGoogleLogin = async () => {
+    if (isLoading) return; 
     setError("");
     setIsLoading(true);
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        // This matches what you added in Supabase Redirect URLs
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -87,7 +88,7 @@ export function Login({ onSignupClick }: LoginProps) {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      {/* Email/password login (existing) */}
+      {/* Email/password login */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-foreground">Email</label>
@@ -96,6 +97,7 @@ export function Login({ onSignupClick }: LoginProps) {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
             className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
           />
         </div>
@@ -107,6 +109,7 @@ export function Login({ onSignupClick }: LoginProps) {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
             className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
           />
         </div>
@@ -124,7 +127,8 @@ export function Login({ onSignupClick }: LoginProps) {
         <span className="text-muted-foreground">Don't have an account?</span>
         <button
           onClick={onSignupClick}
-          className="text-govern-green hover:text-govern-green/80 font-medium transition-colors cursor-pointer"
+          disabled={isLoading}
+          className="text-govern-green hover:text-govern-green/80 font-medium transition-colors cursor-pointer disabled:opacity-50"
         >
           Sign up
         </button>
