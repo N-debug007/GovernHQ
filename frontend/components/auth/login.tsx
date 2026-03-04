@@ -1,5 +1,5 @@
 "use client"
-
+import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
