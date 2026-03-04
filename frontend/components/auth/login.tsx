@@ -1,53 +1,94 @@
-"use client"
+"use client";
+
 import { supabase } from "@/lib/supabaseClient";
-import { useState } from "react"
-import { useAuth } from "@/lib/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface LoginProps {
-  onSignupClick: () => void
+  onSignupClick: () => void;
 }
 
 export function Login({ onSignupClick }: LoginProps) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Keeping this for now 
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
       if (!email || !password) {
-        setError("Please fill in all fields")
-        return
+        setError("Please fill in all fields");
+        return;
       }
-      await login(email, password)
+      await login(email, password);
     } catch (err) {
-      setError("Login failed. Please try again.")
+      setError("Login failed. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError("");
+    setIsLoading(true);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        // This matches what you added in Supabase Redirect URLs
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    // If OAuth succeeds, you’ll be redirected away, so this only runs on error.
+    if (error) {
+      setError(error.message);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-md">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold text-foreground">Welcome to GovernHQ</h1>
-        <p className="text-sm text-muted-foreground">Govern, monitor, and control your AI agents</p>
+        <p className="text-sm text-muted-foreground">
+          Govern, monitor, and control your AI agents
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {error && (
-          <div className="p-3 rounded-md bg-govern-red/10 border border-govern-red/30">
-            <p className="text-sm text-govern-red">{error}</p>
-          </div>
-        )}
+      {error && (
+        <div className="p-3 rounded-md bg-govern-red/10 border border-govern-red/30">
+          <p className="text-sm text-govern-red">{error}</p>
+        </div>
+      )}
 
+      {/* Google OAuth */}
+      <Button
+        type="button"
+        onClick={handleGoogleLogin}
+        disabled={isLoading}
+        className="w-full bg-secondary text-foreground hover:bg-secondary/80 font-semibold disabled:opacity-50"
+      >
+        {isLoading ? "Redirecting..." : "Continue with Google"}
+      </Button>
+
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">OR</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      {/* Email/password login (existing) */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-foreground">Email</label>
           <Input
@@ -89,5 +130,5 @@ export function Login({ onSignupClick }: LoginProps) {
         </button>
       </div>
     </div>
-  )
+  );
 }
