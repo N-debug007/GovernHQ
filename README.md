@@ -231,7 +231,5 @@ GovernHQ/
 │   └── main.py               # FastAPI entry point (register routers here)
 ├── supabase/
 │   └── migrations/           # SQL migration files
-└── .claude/
-    └── memory/
-        └── MEMORY.md         # Claude Code session context
+
 ```
