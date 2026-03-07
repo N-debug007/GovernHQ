@@ -115,6 +115,12 @@ class AgentUpdate(BaseModel):
     status: Optional[Literal["active", "inactive", "blocked"]] = None
 
 
+# ADDED FOR EXECUTION - Michael
+class AgentExecuteRequest(BaseModel):
+    intent: str
+    metadata: dict = {}
+
+
 # ---------------------------------------------------------------------------
 # GET /agents
 # Returns all agents belonging to the caller's organization.
