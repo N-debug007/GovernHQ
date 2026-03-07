@@ -17,13 +17,14 @@ FLAG_KEYWORDS = {
 }
 
 
-def evaluate_intent(payload: GateEvaluateRequest, risk_profile: str | None = None) -> GateEvaluateResponse:
+def evaluate_intent(
+    payload: GateEvaluateRequest,
+    risk_profile: str | None = None,
+) -> GateEvaluateResponse:
     intent_lower = payload.intent.strip().lower()
-
+    # Not sure what we should set the risk factors at currently so I have it like this for now.
     matched_block = [kw for kw in BLOCK_KEYWORDS if kw in intent_lower]
     if matched_block:
-      
-      # Not sure what we should set the risk factors at currently so I have it like this for now.
         return GateEvaluateResponse(
             decision="block",
             risk_score=0.95,
