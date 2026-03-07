@@ -2,11 +2,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from agents.router import router as agents_router, _AuthError
+from gate.router import router as gate_router
 
 app = FastAPI(title="GovernHQ Backend")
 
-# Register routers
+# Register Routers
 app.include_router(agents_router)
+app.include_router(gate_router)
 
 
 @app.exception_handler(_AuthError)
