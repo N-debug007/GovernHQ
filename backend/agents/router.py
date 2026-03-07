@@ -25,6 +25,11 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from supabase import Client, create_client
 
+# ADDED BY MICHAEL
+from gate.logging import log_gate_execution
+from gate.schemas import GateEvaluateRequest
+from gate.service import evaluate_intent
+
 router = APIRouter(prefix="/agents", tags=["agents"])
 
 _TABLE = "agents"
@@ -115,7 +120,7 @@ class AgentUpdate(BaseModel):
     status: Optional[Literal["active", "inactive", "blocked"]] = None
 
 
-# ADDED FOR EXECUTION - Michael
+# ADDED BY MICHAEL
 class AgentExecuteRequest(BaseModel):
     intent: str
     metadata: dict = {}
@@ -202,13 +207,63 @@ def delete_agent(agent_id: str, org_id: str = Depends(get_org_id)) -> JSONRespon
 
 
 # ---------------------------------------------------------------------------
-# POST /agents/{agent_id}/execute  — STUB
-# Gate integration required before this can be implemented (Step 3).
-# Do NOT add business logic here until Gate endpoints are available.
+# POST /agents/{agent_id}/execute
+# ADDED BY MICHAEL: verifies the agent belongs to the caller's org, evaluates
+# the requested action through Gate, logs the decision to ledger_events, and
+# returns the governed execution result.
 # ---------------------------------------------------------------------------
 
 @router.post("/{agent_id}/execute")
-def execute_agent(agent_id: str, org_id: str = Depends(get_org_id)) -> JSONResponse:
-    # TODO (Step 3): verify agent belongs to org, then call Gate decision layer.
-    # Gate call must happen before execution — do not reimplement Gate logic.
-    return _err("Not implemented — pending Gate integration", status=501)
+def execute_agent(
+    agent_id: str,
+    body: AgentExecuteRequest,
+    org_id: str = Depends(get_org_id),
+) -> JSONResponse:
+    result = (
+        _db.table(_TABLE)
+        .select("id, name, status, risk_profile, organization_id")
+        .eq("id", agent_id)
+        .eq("organization_id", org_id)
+        .maybe_single()
+        .execute()
+    )
+
+    if not result.data:
+        return _err("Agent not found", status=404)
+
+    agent = result.data
+
+    gate_payload = GateEvaluateRequest(
+        agent_id=agent_id,
+        intent=body.intent,
+        metadata=body.metadata,
+    )
+
+    gate_result = evaluate_intent(
+        gate_payload,
+        risk_profile=agent.get("risk_profile"),
+    )
+
+    log_row = log_gate_execution(
+        agent_id=agent_id,
+        intent=body.intent,
+        decision=gate_result.decision,
+        metadata=body.metadata,
+    )
+
+    return _ok(
+        {
+            "agent": {
+                "id": agent["id"],
+                "name": agent.get("name"),
+                "status": agent.get("status"),
+                "risk_profile": agent.get("risk_profile"),
+            },
+            "execution": {
+                "intent": body.intent,
+                "metadata": body.metadata,
+            },
+            "gate": gate_result.model_dump(),
+            "log_id": log_row["id"] if log_row and "id" in log_row else None,
+        }
+    )
