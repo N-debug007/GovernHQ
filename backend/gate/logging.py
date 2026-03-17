@@ -9,10 +9,12 @@ def log_gate_execution(
     intent: str,
     decision: str,
     metadata: dict[str, Any],
+    org_id: str,
 ) -> dict | None:
     db = get_db()
 
     payload = {
+        "organization_id": org_id,
         "agent_id": agent_id,
         "action": intent,
         "status": decision,
