@@ -215,6 +215,7 @@ def execute_agent(
     org_id: str = Depends(get_org_id),
 ) -> JSONResponse:
     try:
+        # 1. Fetch agent
         result = (
             _db.table(_TABLE)
             .select("id, name, status, risk_profile, organization_id")
@@ -229,17 +230,28 @@ def execute_agent(
 
         agent = result.data
 
+        # 2. Build Gate payload
         gate_payload = GateEvaluateRequest(
             agent_id=agent_id,
             intent=body.intent,
             metadata=body.metadata,
         )
-
+              
+        # 3. Evaluate intent (governance layer)
         gate_result = evaluate_intent(
             gate_payload,
             risk_profile=agent.get("risk_profile"),
         )
 
+        # 4. Tool Execution Layer 
+        if gate_result.decision == "allow":
+            tool_execution = "executed"
+        elif gate_result.decision == "flag":
+            tool_execution = "requires_approval"
+        else:
+            tool_execution = "blocked"
+
+        # 5. Return response
         return _ok(
             {
                 "agent": {
@@ -253,6 +265,7 @@ def execute_agent(
                     "metadata": body.metadata,
                 },
                 "gate": gate_result.model_dump(),
+                "tool_execution": tool_execution, 
                 "log_id": None,
             }
         )
