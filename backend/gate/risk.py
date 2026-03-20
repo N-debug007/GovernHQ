@@ -1,4 +1,5 @@
 from typing import Tuple, List, Dict
+from .anomaly import detect_anomaly
 
 # 1. Risk Model Definition
 RISK_WEIGHTS = {
@@ -50,11 +51,11 @@ def compute_risk_score(
 
     risk_score += intent_risk
     
-    # Anomaly Detection
+    # Anomaly Detection 
     anomaly_risk = 0.0
-    request_count = metadata.get("request_count", 0)
+    is_anomaly = detect_anomaly(metadata)
 
-    if request_count > 100:
+    if is_anomaly:
         anomaly_risk = RISK_WEIGHTS["anomaly"]
         policy_matches.add("anomaly_detected")
 
