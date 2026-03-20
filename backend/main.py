@@ -1,11 +1,20 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware  # ADD THIS
 
 from agents.router import router as agents_router, _AuthError
 from core.auth import AuthError
 from gate.router import router as gate_router
 
 app = FastAPI(title="GovernHQ Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(agents_router)
 app.include_router(gate_router)
