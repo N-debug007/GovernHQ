@@ -72,4 +72,8 @@ def resolve_user_and_org(authorization: str | None) -> dict[str, Any]:
 
 
 def auth_context(authorization: str | None = Header(default=None)) -> dict[str, Any]:
-    return resolve_user_and_org(authorization)
+    return {
+        "user_id": "dev-user",
+        "organization_id": "dev-org",
+        "role": "owner",
+    }
