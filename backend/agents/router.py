@@ -215,7 +215,6 @@ def execute_agent(
     org_id: str = Depends(get_org_id),
 ) -> JSONResponse:
     try:
-        # 1. Fetch agent
         result = (
             _db.table(_TABLE)
             .select("id, name, status, risk_profile, organization_id")
@@ -230,23 +229,17 @@ def execute_agent(
 
         agent = result.data
 
-        # 2. Build Gate payload
         gate_payload = GateEvaluateRequest(
             agent_id=agent_id,
             intent=body.intent,
             metadata=body.metadata,
         )
 
-        # 3. Evaluate intent
         gate_result = evaluate_intent(
             gate_payload,
             risk_profile=agent.get("risk_profile"),
         )
 
-        # disable logging for testing
-        log_row = None
-
-        # 4. Return response
         return _ok(
             {
                 "agent": {
@@ -266,4 +259,3 @@ def execute_agent(
 
     except Exception as e:
         return _err(f"Execute failed: {str(e)}", status=500)
-    )
