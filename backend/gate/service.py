@@ -24,7 +24,7 @@ def evaluate_intent(payload, risk_profile=None):
     matched_block = [kw for kw in BLOCK_KEYWORDS if kw in intent_lower]
     matched_flag = [kw for kw in FLAG_KEYWORDS if kw in intent_lower]
 
-    risk_score, policy_matches = compute_risk_score(
+    risk_score, policy_matches, breakdown = compute_risk_score(
         intent=payload.intent,
         risk_profile=risk_profile or "low",
         metadata=payload.metadata,
@@ -39,4 +39,5 @@ def evaluate_intent(payload, risk_profile=None):
         risk_score=round(risk_score, 2),
         reason="Decision computed via risk + policy + anomaly rules.",
         policy_matches=policy_matches,
+        breakdown=breakdown, 
     )
