@@ -29,7 +29,8 @@ from supabase import Client, create_client
 from gate.logging import log_gate_execution
 from gate.schemas import GateEvaluateRequest
 from gate.service import evaluate_intent
-
+import uuid
+from datetime import datetime
 router = APIRouter(prefix="/agents", tags=["agents"])
 
 _TABLE = "agents"
@@ -63,7 +64,7 @@ def _err(message: str, status: int) -> JSONResponse:
 # ---------------------------------------------------------------------------
 
 def get_org_id() -> str:
-    return "test-org-id"
+    return "bb68d152-08a4-4af9-8733-6b3124119af5"
 
 
 class _AuthError(Exception):
@@ -130,12 +131,27 @@ def list_agents(org_id: str = Depends(get_org_id)) -> JSONResponse:
 
 @router.post("", status_code=201)
 def create_agent(body: AgentCreate, org_id: str = Depends(get_org_id)) -> JSONResponse:
-    result = (
-        _db.table(_TABLE)
-        .insert({**body.model_dump(), "organization_id": org_id})
-        .execute()
-    )
-    return _ok(result.data[0], status=201)
+    try:
+        result = (
+            _db.table(_TABLE)
+            .insert({
+                "id": str(uuid.uuid4()),
+                "organization_id": org_id,
+                "name": body.name,
+                "description": None,
+                "status": "active",
+                "created_at": datetime.utcnow().isoformat(),
+                "source": body.source,
+                "metadata": body.metadata,
+                "risk_profile": body.risk_profile,
+            })
+            .execute()
+        )
+
+        return _ok(result.data[0], status=201)
+
+    except Exception as e:
+        return _err(f"Insert failed: {str(e)}", status=500)
 
 
 # ---------------------------------------------------------------------------
