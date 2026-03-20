@@ -1,5 +1,4 @@
-from typing import Tuple, List, Dict
-
+from typing import Tuple, List
 
 # 1. Risk Model Definition
 RISK_WEIGHTS = {
@@ -31,28 +30,29 @@ def compute_risk_score(
     - behavioral anomalies
     """
 
+    metadata = metadata or {}
     risk_score = 0.0
-    policy_matches = []
+    policy_matches = set()
 
     # Agent Risk
     agent_risk = RISK_WEIGHTS["agent"].get(risk_profile, 0.1)
     risk_score += agent_risk
 
     if risk_profile == "high":
-        policy_matches.append("high_risk_agent")
+        policy_matches.add("high_risk_agent")
     elif risk_profile == "medium":
-        policy_matches.append("medium_risk_agent")
+        policy_matches.add("medium_risk_agent")
 
     # Intent Risk
     intent_risk = 0.0
 
     if matched_block:
         intent_risk = RISK_WEIGHTS["intent"]["block"]
-        policy_matches.extend(matched_block)
+        policy_matches.update(matched_block)
 
     elif matched_flag:
         intent_risk = RISK_WEIGHTS["intent"]["flag"]
-        policy_matches.extend(matched_flag)
+        policy_matches.update(matched_flag)
 
     risk_score += intent_risk
 
@@ -62,14 +62,14 @@ def compute_risk_score(
 
     if request_count > 100:
         anomaly_risk = RISK_WEIGHTS["anomaly"]
-        policy_matches.append("anomaly_detected")
+        policy_matches.add("anomaly_detected")
 
     risk_score += anomaly_risk
-    
+
     # Clamp Final Score
     risk_score = min(risk_score, 1.0)
 
-    return risk_score, policy_matches
+    return risk_score, list(policy_matches)
 
 # 3. Decision Mapping
 def map_decision(risk_score: float) -> str:
