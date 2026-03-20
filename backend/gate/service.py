@@ -1,5 +1,5 @@
 from .schemas import GateEvaluateRequest, GateEvaluateResponse
-from .risk import compute_risk_score, apply_risk_rules
+from .risk import compute_risk_score, apply_risk_rules, map_decision
 from .anomaly import detect_anomaly
 
 
@@ -19,13 +19,28 @@ FLAG_KEYWORDS = {
 }
 
 
-def evaluate_intent(
-    payload: GateEvaluateRequest,
-    risk_profile: str | None = None,
-) -> GateEvaluateResponse:
-    intent = payload.intent.strip()
-    intent_lower = intent.lower()
-    metadata = payload.metadata or {}
+def evaluate_intent(payload, risk_profile=None):
+    intent_lower = payload.intent.strip().lower()
+
+    matched_block = [kw for kw in BLOCK_KEYWORDS if kw in intent_lower]
+    matched_flag = [kw for kw in FLAG_KEYWORDS if kw in intent_lower]
+
+    risk_score, policy_matches = compute_risk_score(
+        intent=payload.intent,
+        risk_profile=risk_profile or "low",
+        metadata=payload.metadata,
+        matched_block=matched_block,
+        matched_flag=matched_flag,
+    )
+
+    decision = map_decision(risk_score)
+
+    return GateEvaluateResponse(
+        decision=decision,
+        risk_score=risk_score,
+        reason="Decision computed via risk + policy + anomaly rules.",
+        policy_matches=policy_matches,
+    )
 
     # ------------------------------------------------------------------
     # 1. Hard block rules (highest priority)
