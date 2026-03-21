@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from core.auth import auth_context
+from backend.core.auth import auth_context
 from .logging import log_gate_execution
 from .schemas import GateEvaluateRequest
 from .service import evaluate_intent

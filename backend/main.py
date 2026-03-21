@@ -1,14 +1,25 @@
 from fastapi import FastAPI, Request
+from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from agents.router import router as agents_router, _AuthError
-from core.auth import AuthError
-from gate.router import router as gate_router
+from backend.agents.router import router as agents_router, _AuthError
+from backend.core.auth import AuthError
+from backend.gate.router import router as gate_router
+from backend.monitoring.router import router as monitoring_router
+from backend.webhooks.router import router as webhooks_router
 
 app = FastAPI(title="GovernHQ Backend")
+# Dev-only: permissive CORS so the frontend and test clients can reach the API.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(agents_router)
 app.include_router(gate_router)
+app.include_router(monitoring_router)
+app.include_router(webhooks_router)
 
 
 @app.exception_handler(_AuthError)

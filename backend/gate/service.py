@@ -1,16 +1,21 @@
-from core.auth import get_db
+from backend.core.auth import get_db
 from .schemas import GateEvaluateRequest, GateEvaluateResponse
 
-# Columns assumed on the policies table (no migration exists in this repo to verify):
-#   organization_id  uuid   — org scoping, assumed by analogy with the agents table
-#   status           text   — only 'active' policies are evaluated; assumes 'active'/'draft'/'archived'
-#   name             text   — returned in policy_matches so callers know which policies fired
-#   action           text   — 'block', 'review', or 'log' per README description
-#   condition        text   — case-insensitive substring matched against the incoming intent;
-#                             semantics inferred from sprint backlog spec ("condition field")
+# Actual policies table schema (confirmed from Supabase on 2026-03-17):
+#   organization_id  uuid     — org scoping
+#   is_enabled       boolean  — True = active; filter to is_enabled=true
+#   name             text     — returned in policy_matches
+#   rule             jsonb    — policy rule payload; assumed shape:
+#                              {"action": "block"|"review"|"log",
+#                               "condition": "<intent substring to match>"}
 #
-# Matching logic: a policy fires when its condition is a non-empty substring of the intent.
-# Priority: block > review > log/none (all → allow).
+# The `action` and `condition` values are stored inside the rule jsonb field,
+# not as top-level columns. This is inferred from the schema — no migration
+# for the policies table exists in this repo to document the rule payload shape.
+#
+# Matching: a policy fires when rule.condition is a non-empty case-insensitive
+# substring of the incoming intent string.
+# Priority: block > review (→ pause) > log > none (→ allow).
 
 
 def evaluate_intent(
@@ -19,7 +24,7 @@ def evaluate_intent(
     risk_profile: str | None = None,
 ) -> GateEvaluateResponse:
     """
-    Evaluate an agent's intent against active org policies from Supabase.
+    Evaluate an agent's intent against enabled org policies from Supabase.
 
     Decision mapping:
       block  policy matches → "block"
@@ -32,18 +37,22 @@ def evaluate_intent(
         db = get_db()
         resp = (
             db.table("policies")
-            .select("name, action, condition")
+            .select("name, rule")
             .eq("organization_id", org_id)
-            .eq("status", "active")
+            .eq("is_enabled", True)
             .execute()
         )
         policies = resp.data or []
 
         def _matches(policy: dict) -> bool:
-            condition = (policy.get("condition") or "").strip().lower()
+            rule = policy.get("rule") or {}
+            condition = (rule.get("condition") or "").strip().lower()
             return bool(condition) and condition in intent_lower
 
-        blocked = [p["name"] for p in policies if p.get("action") == "block" and _matches(p)]
+        def _action(policy: dict) -> str:
+            return (policy.get("rule") or {}).get("action", "")
+
+        blocked = [p["name"] for p in policies if _action(p) == "block" and _matches(p)]
         if blocked:
             return GateEvaluateResponse(
                 decision="block",
@@ -52,7 +61,7 @@ def evaluate_intent(
                 policy_matches=blocked,
             )
 
-        paused = [p["name"] for p in policies if p.get("action") == "review" and _matches(p)]
+        paused = [p["name"] for p in policies if _action(p) == "review" and _matches(p)]
         if paused:
             return GateEvaluateResponse(
                 decision="pause",
@@ -61,7 +70,7 @@ def evaluate_intent(
                 policy_matches=paused,
             )
 
-        logged = [p["name"] for p in policies if p.get("action") == "log" and _matches(p)]
+        logged = [p["name"] for p in policies if _action(p) == "log" and _matches(p)]
         if logged:
             return GateEvaluateResponse(
                 decision="allow",
