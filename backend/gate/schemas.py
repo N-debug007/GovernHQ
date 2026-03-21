@@ -3,7 +3,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
-DecisionLiteral = Literal["allow", "flag", "block"]
+DecisionLiteral = Literal["allow", "pause", "block"]
 
 
 class GateEvaluateRequest(BaseModel):

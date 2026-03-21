@@ -26,9 +26,9 @@ from pydantic import BaseModel
 from supabase import Client, create_client
 
 # ADDED BY MICHAEL
-from gate.logging import log_gate_execution
-from gate.schemas import GateEvaluateRequest
-from gate.service import evaluate_intent
+from backend.gate.logging import log_gate_execution
+from backend.gate.schemas import GateEvaluateRequest
+from backend.gate.service import evaluate_intent
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
@@ -241,6 +241,7 @@ def execute_agent(
 
     gate_result = evaluate_intent(
         gate_payload,
+        org_id=org_id,
         risk_profile=agent.get("risk_profile"),
     )
 
@@ -249,6 +250,7 @@ def execute_agent(
         intent=body.intent,
         decision=gate_result.decision,
         metadata=body.metadata,
+        org_id=org_id,
     )
 
     return _ok(

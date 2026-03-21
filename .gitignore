@@ -1,0 +1,14 @@
+.claude/
+.vscode/
+venv/
+.venv/
+*.venv/
+envorinment-terminal-commands.txt
+
+# Python caches and compiled files
+__pycache__/
+*.py[cod]
+
+# Local environment files
+backend/.env
+.env
