@@ -1,0 +1,82 @@
+from typing import Tuple, List, Dict
+from .anomaly import detect_anomaly
+
+# 1. Risk Model Definition
+RISK_WEIGHTS = {
+    "agent": {
+        "low": 0.1,
+        "medium": 0.3,
+        "high": 0.6,
+    },
+    "intent": {
+        "block": 0.5,
+        "flag": 0.25,
+        "safe": 0.0,
+    },
+    "anomaly": 0.4,
+}
+
+# 2. Risk Scoring Function
+def compute_risk_score(
+    intent: str,
+    risk_profile: str,
+    metadata: dict,
+    matched_block: List[str],
+    matched_flag: List[str],
+) -> Tuple[float, List[str], Dict]:
+    metadata = metadata or {}
+
+    risk_score = 0.0
+    policy_matches = set()
+    
+    # Agent Risk
+    agent_risk = RISK_WEIGHTS["agent"].get(risk_profile, 0.1)
+    risk_score += agent_risk
+
+    if risk_profile == "high":
+        policy_matches.add("high_risk_agent")
+    elif risk_profile == "medium":
+        policy_matches.add("medium_risk_agent")
+
+    # Intent Risk
+    intent_risk = 0.0
+
+    if matched_block:
+        intent_risk = RISK_WEIGHTS["intent"]["block"]
+        policy_matches.update(matched_block)
+
+    elif matched_flag:
+        intent_risk = RISK_WEIGHTS["intent"]["flag"]
+        policy_matches.update(matched_flag)
+
+    risk_score += intent_risk
+    
+    # Anomaly Detection 
+    anomaly_risk = 0.0
+    is_anomaly = detect_anomaly(metadata)
+
+    if is_anomaly:
+        anomaly_risk = RISK_WEIGHTS["anomaly"]
+        policy_matches.add("anomaly_detected")
+
+    risk_score += anomaly_risk
+
+    # Clamp Score
+    risk_score = min(risk_score, 1.0)
+
+    breakdown = {
+        "agent": round(agent_risk, 2),
+        "intent": round(intent_risk, 2),
+        "anomaly": round(anomaly_risk, 2),
+    }
+
+    return risk_score, list(policy_matches), breakdown
+
+
+# 3. Decision Mapping
+def map_decision(risk_score: float) -> str:
+    if risk_score >= 0.8:
+        return "block"
+    elif risk_score >= 0.5:
+        return "flag"
+    return "allow"
