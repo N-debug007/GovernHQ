@@ -1,5 +1,5 @@
 import { Sidebar } from "../components/Sidebar";
-import svgPaths from "../../imports/svg-3tkvp9vgpz";
+
 import { useState } from "react";
 
 export function LedgerPage() {
@@ -32,8 +32,8 @@ export function LedgerPage() {
   const filteredEntries = allEntries.filter(entry => {
     const search = searchTerm.toLowerCase();
     const statusText = entry.status === 'green' ? 'allowed' : entry.status === 'red' ? 'blocked' : 'paused';
-    
-    const matchesSearch = 
+
+    const matchesSearch =
       entry.agent.toLowerCase().includes(search) ||
       entry.type.toLowerCase().includes(search) ||
       statusText.includes(search) ||
@@ -42,12 +42,12 @@ export function LedgerPage() {
 
     const matchesAgent = selectedAgent === 'All Agents' || entry.agent === selectedAgent;
     const matchesType = selectedType === 'All Types' || entry.type === selectedType;
-    const matchesStatus = 
-      selectedStatus === 'All Statuses' || 
+    const matchesStatus =
+      selectedStatus === 'All Statuses' ||
       (selectedStatus === 'Allowed' && entry.status === 'green') ||
       (selectedStatus === 'Blocked' && entry.status === 'red') ||
       (selectedStatus === 'Paused' && entry.status === 'orange');
-    
+
     return matchesSearch && matchesAgent && matchesType && matchesStatus;
   });
 
@@ -61,7 +61,7 @@ export function LedgerPage() {
         <div className="p-[56px] pl-[39px]">
           {/* Page Title */}
           <h1 className="font-['Mulish:Bold',sans-serif] font-bold text-white text-[28px] mb-[12px] tracking-tight">Ledger</h1>
-          
+
           {/* Live Status */}
           <p className="font-['Mulish:SemiBold',sans-serif] font-semibold text-[#94a3b8] text-[16px] mb-[32px]">
             <span>13:17:25  </span>
@@ -73,7 +73,7 @@ export function LedgerPage() {
             <div className="flex items-center gap-[12px] flex-1">
               <div className="size-[20px]">
                 <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
-                  <path d={svgPaths.pded2700} fill="#64748b" />
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
               <input
@@ -111,9 +111,8 @@ export function LedgerPage() {
                           setSelectedAgent(agent);
                           setShowAgentDropdown(false);
                         }}
-                        className={`w-full text-left px-[16px] py-[10px] font-['Mulish:Regular',sans-serif] font-normal text-[14px] transition-all hover:bg-[#1e293b]/50 ${
-                          selectedAgent === agent ? 'text-[#3b82f6] bg-[#1e293b]/30' : 'text-[#94a3b8]'
-                        }`}
+                        className={`w-full text-left px-[16px] py-[10px] font-['Mulish:Regular',sans-serif] font-normal text-[14px] transition-all hover:bg-[#1e293b]/50 ${selectedAgent === agent ? 'text-[#3b82f6] bg-[#1e293b]/30' : 'text-[#94a3b8]'
+                          }`}
                       >
                         {agent}
                       </button>
@@ -146,9 +145,8 @@ export function LedgerPage() {
                           setSelectedType(type);
                           setShowTypeDropdown(false);
                         }}
-                        className={`w-full text-left px-[16px] py-[10px] font-['Mulish:Regular',sans-serif] font-normal text-[14px] transition-all hover:bg-[#1e293b]/50 ${
-                          selectedType === type ? 'text-[#3b82f6] bg-[#1e293b]/30' : 'text-[#94a3b8]'
-                        }`}
+                        className={`w-full text-left px-[16px] py-[10px] font-['Mulish:Regular',sans-serif] font-normal text-[14px] transition-all hover:bg-[#1e293b]/50 ${selectedType === type ? 'text-[#3b82f6] bg-[#1e293b]/30' : 'text-[#94a3b8]'
+                          }`}
                       >
                         {type}
                       </button>
@@ -181,9 +179,8 @@ export function LedgerPage() {
                           setSelectedStatus(status);
                           setShowStatusDropdown(false);
                         }}
-                        className={`w-full text-left px-[16px] py-[10px] font-['Mulish:Regular',sans-serif] font-normal text-[14px] transition-all hover:bg-[#1e294b]/50 ${
-                          selectedStatus === status ? 'text-[#3b82f6] bg-[#1e293b]/30' : 'text-[#94a3b8]'
-                        }`}
+                        className={`w-full text-left px-[16px] py-[10px] font-['Mulish:Regular',sans-serif] font-normal text-[14px] transition-all hover:bg-[#1e294b]/50 ${selectedStatus === status ? 'text-[#3b82f6] bg-[#1e293b]/30' : 'text-[#94a3b8]'
+                          }`}
                       >
                         {status}
                       </button>
@@ -198,14 +195,14 @@ export function LedgerPage() {
           <div className="bg-gradient-to-br from-[#1e293b]/50 to-[#0f172a]/30 border border-[#334155]/30 rounded-[16px] shadow-[0px_8px_32px_0px_rgba(0,0,0,0.3)] backdrop-blur-xl p-[32px] relative overflow-hidden">
             {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#8b5cf6]/5 to-transparent pointer-events-none" />
-            
+
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-[24px]">
                 <h2 className="font-['Mulish:Bold',sans-serif] font-bold text-white text-[20px] tracking-tight">Entries</h2>
                 <div className="border border-[#334155]/50 hover:border-[#3b82f6]/50 rounded-[12px] px-[24px] py-[14px] flex items-center gap-[10px] transition-all group hover:bg-[#1e293b]/30 cursor-pointer">
                   <p className="font-['Mulish:Regular',sans-serif] font-normal text-[#94a3b8] text-[16px]">Most Recent</p>
                   <svg className="size-[20px]" fill="none" viewBox="0 0 20 20">
-                    <path d={svgPaths.pa337080} fill="#94a3b8" />
+                    <path d="M6 9l6 6 6-6" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               </div>
@@ -227,8 +224,8 @@ export function LedgerPage() {
                   </thead>
                   <tbody>
                     {filteredEntries.map((entry, index) => (
-                      <tr 
-                        key={index} 
+                      <tr
+                        key={index}
                         className="border-b border-[#334155]/20 hover:bg-[#1e293b]/30 transition-all duration-200 cursor-pointer group"
                         onClick={() => toggleEntry(index)}
                       >
@@ -239,13 +236,12 @@ export function LedgerPage() {
                         <td className="py-[16px] font-['Mulish:Regular',sans-serif] font-normal text-[#94a3b8] text-[14px]">{entry.gate}</td>
                         <td className="py-[16px] text-right">
                           <div className="inline-flex justify-end">
-                            <div className={`size-[10px] rounded-full ${
-                              entry.status === 'green' 
-                                ? 'bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.6)]' 
-                                : entry.status === 'red' 
-                                ? 'bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.6)]' 
-                                : 'bg-[#f59e0b] shadow-[0_0_8px_rgba(245,158,11,0.6)]'
-                            }`} />
+                            <div className={`size-[10px] rounded-full ${entry.status === 'green'
+                                ? 'bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.6)]'
+                                : entry.status === 'red'
+                                  ? 'bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.6)]'
+                                  : 'bg-[#f59e0b] shadow-[0_0_8px_rgba(245,158,11,0.6)]'
+                              }`} />
                           </div>
                         </td>
                       </tr>
@@ -286,7 +282,7 @@ export function LedgerPage() {
       <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-br from-[#1e293b] to-[#0f172a] border-l border-[#1e293b]/50 shadow-[-12px_0_48px_0_rgba(0,0,0,0.7)] backdrop-blur-xl p-[48px] overflow-y-auto z-10">
         {/* Ambient glow */}
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#8b5cf6]/10 blur-[120px] rounded-full pointer-events-none" />
-        
+
         <div className="relative z-10">
           {selectedEntry === null ? (
             <>
@@ -300,7 +296,8 @@ export function LedgerPage() {
                   <div className="flex items-center gap-[16px]">
                     <div className="bg-gradient-to-br from-[#10b981]/30 to-[#10b981]/10 rounded-[12px] size-[48px] backdrop-blur-sm flex items-center justify-center">
                       <svg className="size-[28px] drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" fill="none" viewBox="0 0 32 32">
-                        <path d={svgPaths.p10b19680} stroke="#10B981" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#10b981" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M9 12l2 2 4-4" stroke="#10b981" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
                     <div className="flex-1">
@@ -315,7 +312,8 @@ export function LedgerPage() {
                   <div className="flex items-center gap-[16px]">
                     <div className="bg-gradient-to-br from-[#ef4444]/30 to-[#ef4444]/10 rounded-[12px] size-[48px] backdrop-blur-sm flex items-center justify-center">
                       <svg className="size-[32px] drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" fill="none" preserveAspectRatio="none" viewBox="0 0 36 36">
-                        <path d={svgPaths.p2361c640} fill="#EF4444" />
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#ef4444" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M15 9l-6 6m0-6l6 6" stroke="#ef4444" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
                     <div className="flex-1">
@@ -330,7 +328,8 @@ export function LedgerPage() {
                   <div className="flex items-center gap-[16px]">
                     <div className="bg-gradient-to-br from-[#f59e0b]/30 to-[#f59e0b]/10 rounded-[12px] size-[48px] backdrop-blur-sm flex items-center justify-center">
                       <svg className="size-[28px] drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" fill="none" preserveAspectRatio="none" viewBox="0 0 32 32">
-                        <path clipRule="evenodd" d={svgPaths.p1c48d580} fill="#F59E0B" fillRule="evenodd" />
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#f59e0b" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M10 10v4m4-4v4" stroke="#f59e0b" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
                     <div className="flex-1">
@@ -345,7 +344,7 @@ export function LedgerPage() {
               <div className="bg-gradient-to-br from-[#1e293b]/50 to-[#0f172a]/30 border border-[#334155]/30 rounded-[16px] shadow-[0px_8px_32px_0px_rgba(0,0,0,0.3)] backdrop-blur-xl overflow-hidden relative p-[24px]">
                 {/* Glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#8b5cf6]/5 to-transparent pointer-events-none" />
-                
+
                 <div className="relative z-10">
                   {/* Header and Date Filter */}
                   <div className="flex items-center justify-between mb-[24px]">
@@ -354,7 +353,7 @@ export function LedgerPage() {
                       <p className="font-['Mulish:Regular',sans-serif] font-normal text-[#94a3b8] text-[12px]">Feb 2026</p>
                       <div className="size-[16px]">
                         <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 20">
-                          <path d={svgPaths.pa337080} fill="#94a3b8" />
+                          <path d="M6 9l6 6 6-6" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
                     </div>
@@ -432,7 +431,7 @@ export function LedgerPage() {
               {/* Entry Details View */}
               <div className="flex items-center justify-between mb-[32px]">
                 <h2 className="font-['Mulish:SemiBold',sans-serif] font-semibold text-white text-[22px] tracking-tight">Entry Details</h2>
-                <button 
+                <button
                   onClick={() => setSelectedEntry(null)}
                   className="size-[32px] rounded-[8px] border border-[#334155]/50 hover:border-[#ef4444]/50 hover:bg-[#1e293b]/30 transition-all flex items-center justify-center group"
                 >
@@ -452,7 +451,7 @@ export function LedgerPage() {
                 { time: '14:28:44', agent: 'CORE-1', type: 'API_CALL', intent: 'Override billing limit for customer #4421', gate: '—', status: 'orange' },
               ].map((entry, index) => {
                 if (index !== selectedEntry) return null;
-                
+
                 return (
                   <div key={index} className="bg-gradient-to-br from-[#0f172a]/80 to-[#1e293b]/40 border border-[#334155]/40 rounded-[12px] p-[24px] mb-[16px] last:mb-0">
                     {/* Green - Allowed */}
@@ -471,13 +470,13 @@ export function LedgerPage() {
                     {entry.status === 'orange' && (
                       <div>
                         <p className="font-['Mulish:Regular',sans-serif] font-normal text-[#94a3b8] text-[14px] mb-[12px]">
-                          {index === 3 
+                          {index === 3
                             ? 'Agent reasoned about pulling all customer records.'
                             : 'Agent reasoned about overriding billing limit for customer account.'}
                         </p>
                         <p className="font-['Mulish:Regular',sans-serif] font-normal text-[#94a3b8] text-[14px] mb-[16px]">
                           <span className="text-[#f59e0b]">Action paused:</span>{' '}
-                          {index === 3 
+                          {index === 3
                             ? 'Bulk PII access requires human approval.'
                             : 'Financial override requires manager approval.'}
                         </p>

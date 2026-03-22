@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "@/lib/auth-context";
-import ledgerSvgPaths from "../../imports/svg-3tkvp9vgpz";
-import dashboardSvgPaths from "../../imports/svg-efye8a7hab";
+
 
 type SidebarProps = {
   activePage?: 'overview' | 'ledger' | 'agents' | 'security' | 'policies' | 'onboarding' | 'settings';
@@ -79,10 +78,11 @@ export function Sidebar({ activePage = 'overview' }: SidebarProps) {
             </>
           )}
           <div className={`absolute left-[16px] top-[15px] size-[30px] ${activePage !== 'overview' ? 'group-hover:scale-110 transition-transform' : ''}`}>
-            <svg className="block size-full drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" fill="none" preserveAspectRatio="none" viewBox="0 0 30 30">
-              <g id="ic:round-dashboard">
-                <path d={ledgerSvgPaths.p3e5b5100} fill={activePage === 'overview' ? 'white' : '#64748b'} id="Vector" />
-              </g>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activePage === 'overview' ? 'white' : '#64748b'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`size-full ${activePage !== 'overview' ? 'group-hover:stroke-[#94a3b8] transition-colors' : ''}`}>
+              <rect width="7" height="9" x="3" y="3" rx="1" />
+              <rect width="7" height="5" x="14" y="3" rx="1" />
+              <rect width="7" height="9" x="14" y="12" rx="1" />
+              <rect width="7" height="5" x="3" y="16" rx="1" />
             </svg>
           </div>
         </Link>
@@ -96,10 +96,14 @@ export function Sidebar({ activePage = 'overview' }: SidebarProps) {
             </>
           )}
           <div className={`absolute left-[12px] top-[12px] size-[36px] ${activePage !== 'agents' ? 'group-hover:scale-110 transition-transform' : ''}`}>
-            <svg className="block size-full drop-shadow-[0_0_8px_rgba(99,102,241,0.3)]" fill="none" preserveAspectRatio="none" viewBox="0 0 36 36">
-              <g id="tabler:robot">
-                <path d={ledgerSvgPaths.p8cacc0} id="Vector" stroke={activePage === 'agents' ? 'white' : '#64748b'} strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" className={activePage !== 'agents' ? 'group-hover:stroke-[#94a3b8] transition-colors' : ''} />
-              </g>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activePage === 'agents' ? 'white' : '#64748b'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`size-full ${activePage !== 'agents' ? 'group-hover:stroke-[#94a3b8] transition-colors' : ''}`}>
+              <rect width="16" height="12" x="4" y="8" rx="2" />
+              <path d="M2 14h2" />
+              <path d="M20 14h2" />
+              <path d="M15 13v2" />
+              <path d="M9 13v2" />
+              <path d="M12 8V4" />
+              <path d="M12 4L10 2" />
             </svg>
           </div>
         </Link>
@@ -115,11 +119,8 @@ export function Sidebar({ activePage = 'overview' }: SidebarProps) {
           <div className={`absolute left-[12px] top-[12px] overflow-clip size-[36px] ${activePage !== 'ledger' ? 'group-hover:scale-110 transition-transform' : ''}`}>
             <div className="absolute inset-[16.67%_12.5%]">
               <div className="absolute inset-[-6.25%_-5.56%]">
-                <svg className="block size-full drop-shadow-[0_0_8px_rgba(124,58,237,0.3)]" fill="none" preserveAspectRatio="none" viewBox="0 0 30 27">
-                  <g id="Group">
-                    <path d={ledgerSvgPaths.p2e1e3b00} fill={activePage === 'ledger' ? 'white' : '#64748b'} id="Vector" />
-                    <path d={ledgerSvgPaths.p38222380} id="Vector_2" stroke={activePage === 'ledger' ? 'white' : '#64748b'} strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
-                  </g>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activePage === 'ledger' ? 'white' : '#64748b'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`size-full ${activePage !== 'ledger' ? 'group-hover:stroke-[#94a3b8] transition-colors' : ''}`}>
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
                 </svg>
               </div>
             </div>
@@ -135,11 +136,8 @@ export function Sidebar({ activePage = 'overview' }: SidebarProps) {
             </>
           )}
           <div className={`absolute left-[16px] top-[15px] overflow-clip size-[28px] ${activePage !== 'security' ? 'group-hover:scale-110 transition-transform' : ''}`}>
-            <svg className="absolute block size-full drop-shadow-[0_0_8px_rgba(139,92,246,0.3)]" fill="none" viewBox="0 0 24 30.0009">
-              <g id="Group">
-                <path d={ledgerSvgPaths.p9263400} fill={activePage === 'security' ? 'white' : '#64748b'} id="Vector" className={activePage !== 'security' ? 'group-hover:fill-[#94a3b8] transition-colors' : ''} />
-                <path d={ledgerSvgPaths.pfc6fd00} id="Vector_2" stroke={activePage === 'security' ? 'white' : '#64748b'} strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" className={activePage !== 'security' ? 'group-hover:stroke-[#94a3b8] transition-colors' : ''} />
-              </g>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activePage === 'security' ? 'white' : '#64748b'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`size-full ${activePage !== 'security' ? 'group-hover:stroke-[#94a3b8] transition-colors' : ''}`}>
+              <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2-1 4-2 7-2 2.89 0 4.78.29 7 2a1 1 0 0 1 1 1v7z" />
             </svg>
           </div>
         </Link>
