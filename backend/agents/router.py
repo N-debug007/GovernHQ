@@ -26,9 +26,9 @@ from pydantic import BaseModel
 from supabase import Client, create_client
 
 # ADDED BY MICHAEL
-from backend.gate.logging import log_gate_execution
-from backend.gate.schemas import GateEvaluateRequest
-from backend.gate.service import evaluate_intent
+from gate.logging import log_gate_execution
+from gate.schemas import GateEvaluateRequest
+from gate.service import evaluate_intent
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 

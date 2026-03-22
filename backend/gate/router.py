@@ -3,8 +3,8 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
-from backend.core.auth import auth_context, get_db
-from backend.core.ratelimit import check_rate_limit
+from core.auth import auth_context, get_db
+from core.ratelimit import check_rate_limit
 from .logging import log_gate_execution
 from .schemas import GateEvaluateRequest
 from .service import evaluate_intent

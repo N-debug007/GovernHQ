@@ -1,4 +1,4 @@
-from backend.core.auth import get_db
+from core.auth import get_db
 from .schemas import GateEvaluateRequest, GateEvaluateResponse
 
 # Actual policies table schema (confirmed from Supabase on 2026-03-17):

@@ -1,6 +1,6 @@
 from typing import Any
 
-from backend.core.auth import get_db
+from core.auth import get_db
 
 
 def log_gate_execution(
