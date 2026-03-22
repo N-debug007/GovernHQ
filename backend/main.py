@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware  # ADD THIS
+from fastapi.middleware.cors import CORSMiddleware 
 
 from agents.router import router as agents_router, _AuthError
 from core.auth import AuthError
