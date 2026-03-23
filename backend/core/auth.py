@@ -72,8 +72,14 @@ def resolve_user_and_org(authorization: str | None) -> dict[str, Any]:
 
 
 def auth_context(authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    # TEMPORARY (testing only):
+    # Using a fixed auth context to unblock development/testing.
+    # This bypasses JWT validation and organization lookup.
+
     return {
         "user_id": "dev-user",
         "organization_id": "dev-org",
         "role": "owner",
     }
+    # ORIGINAL IMPLEMENTATION (kept for future use)
+    # return resolve_user_and_org(authorization)
