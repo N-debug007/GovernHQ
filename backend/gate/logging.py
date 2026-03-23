@@ -1,22 +1,13 @@
-import hashlib
-import json
+import logging
 from typing import Any
 from datetime import datetime, timezone
 
-from core.auth import get_db
+from backend.core.auth import get_db
+from backend.core.ledger_chain import GENESIS_HASH, classify_action_type, hash_row
 
+logger = logging.getLogger(__name__)
 
-def _compute_hash(entry: dict, prev_hash: str | None) -> str:
-    payload = {
-        "organization_id": entry.get("organization_id"),
-        "agent_id": entry.get("agent_id"),
-        "action": entry.get("action"),
-        "status": entry.get("status"),
-        "created_at": entry.get("created_at"),
-        "prev_hash": prev_hash or "",
-    }
-    content = json.dumps(payload, sort_keys=True)
-    return hashlib.sha256(content.encode()).hexdigest()
+_CHAIN_COLS = "id, agent_id, action, status, created_at, prev_hash"
 
 
 def log_gate_execution(
@@ -26,35 +17,40 @@ def log_gate_execution(
     decision: str,
     metadata: dict[str, Any],
     org_id: str,
+    tool_name: str | None = None,
 ) -> dict | None:
     db = get_db()
 
-    # Get the last row's hash to chain from
-    last_row = (
+    # Classify action type from intent or tool_name
+    action_type = classify_action_type(intent, tool_name)
+
+    # Compute prev_hash by chaining from the most recent row for this org.
+    # If no prior row exists, anchor to the genesis hash.
+    prev_resp = (
         db.table("ledger_events")
-        .select("entry_hash")
+        .select(_CHAIN_COLS)
         .eq("organization_id", org_id)
         .order("created_at", desc=True)
         .limit(1)
         .execute()
     )
-    prev_hash = None
-    if last_row.data:
-        prev_hash = last_row.data[0].get("entry_hash")
-
-    created_at = datetime.now(timezone.utc).isoformat()
+    prev_rows = prev_resp.data or []
+    if prev_rows:
+        prev_hash = hash_row(prev_rows[0])
+    else:
+        prev_hash = GENESIS_HASH
 
     payload = {
         "organization_id": org_id,
-        "agent_id": agent_id,
-        "action": intent,
-        "status": decision,
-        "metadata": metadata,
-        "created_at": created_at,
-        "prev_hash": prev_hash,
+        "agent_id":        agent_id,
+        "action":          intent,
+        "status":          decision,
+        "metadata":        metadata,
+        "action_type":     action_type,
+        "prev_hash":       prev_hash,
     }
 
-    entry_hash = _compute_hash(payload, prev_hash)
+    entry_hash = hash_row(payload)
     payload["entry_hash"] = entry_hash
 
     response = db.table("ledger_events").insert(payload).execute()

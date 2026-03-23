@@ -1,8 +1,8 @@
 from typing import Any, Optional
 from datetime import datetime, timedelta
 
-from core.auth import get_db
-from gate.logging import log_gate_execution
+from backend.core.auth import get_db
+from backend.gate.logging import log_gate_execution
 from .schemas import GovernEvaluateRequest, GovernEvaluateResponse
 
 # Keyword-based policy rules (MVP)
@@ -47,7 +47,6 @@ def evaluate_policies(intent: str, tool_name: Optional[str], org_id: str) -> lis
     matches = []
     intent_lower = intent.strip().lower()
 
-    # Check keyword-based core policies
     for kw in BLOCK_KEYWORDS:
         if kw in intent_lower:
             matches.append(f"block_policy_match:{kw}")
@@ -56,7 +55,6 @@ def evaluate_policies(intent: str, tool_name: Optional[str], org_id: str) -> lis
         if kw in intent_lower:
             matches.append(f"flag_policy_match:{kw}")
 
-    # Check dynamic org policies from DB
     for policy in (active_policies.data or []):
         rule = policy.get("rule") or {}
         condition = (rule.get("condition") or "").strip().lower()
@@ -95,7 +93,6 @@ def detect_anomalies(agent_id: str, org_id: str) -> list[str]:
     db = get_db()
     anomalies = []
 
-    # Rate anomaly: more than 10 calls in the last minute
     one_minute_ago = (datetime.utcnow() - timedelta(minutes=1)).isoformat()
     recent_events = (
         db.table("ledger_events")
@@ -109,12 +106,10 @@ def detect_anomalies(agent_id: str, org_id: str) -> list[str]:
     if event_count > 10:
         anomalies.append(f"rate_anomaly: {event_count} actions/min (threshold: 10)")
 
-    # Repeated blocks: 3+ blocks in last minute
     block_count = sum(1 for r in rows if r.get("status") == "block")
     if block_count >= 3:
         anomalies.append(f"repeated_blocks: {block_count} blocks in last minute")
 
-    # Reasoning loop: same intent repeated 5+ times in last minute
     from collections import Counter
     intent_counts = Counter(r.get("action", "").strip().lower() for r in rows)
     for intent, count in intent_counts.items():
@@ -122,7 +117,6 @@ def detect_anomalies(agent_id: str, org_id: str) -> list[str]:
             anomalies.append(f"reasoning_loop: intent '{intent[:50]}' repeated {count} times in 1 minute")
             break
 
-    # Behavioral drift: block rate > 50% over last 20 events
     last_20 = (
         db.table("ledger_events")
         .select("status")
@@ -139,23 +133,17 @@ def detect_anomalies(agent_id: str, org_id: str) -> list[str]:
 
     return anomalies
 
+
 def process_evaluation(payload: GovernEvaluateRequest, org_id: str) -> GovernEvaluateResponse:
     """5. Orchestrate the full evaluation pipeline."""
-    # 1. Identify Agent
     agent_info = identify_agent(payload.agent_id, org_id)
-
-    # 2. Evaluate Policies
     policy_matches = evaluate_policies(payload.intent, payload.tool_name, org_id)
-
-    # 3. Detect Anomalies
     anomalies = detect_anomalies(payload.agent_id, org_id)
 
-    # 4. Compute Risk
     risk_score = compute_risk(agent_info.get("risk_profile", "low"), policy_matches, payload.intent)
     if anomalies:
         risk_score = min(1.0, risk_score + 0.2)
 
-    # 5. Determine Decision
     decision = "allow"
     reason = "No issues detected. Intent is within safe boundaries."
 
@@ -166,14 +154,12 @@ def process_evaluation(payload: GovernEvaluateRequest, org_id: str) -> GovernEva
         decision = "pause"
         reason = "Intent flagged for review due to anomaly or elevated risk."
 
-    # 6. Auto-block entire agent if anomaly detected
     if anomalies:
         db = get_db()
         db.table("agents").update({"status": "blocked"}).eq("id", payload.agent_id).execute()
         decision = "block"
         reason = f"Agent auto-blocked by monitor: {anomalies[0]}"
 
-    # 7. Log with hash chaining (uses gate/logging.py)
     log_gate_execution(
         agent_id=payload.agent_id,
         intent=payload.intent,
