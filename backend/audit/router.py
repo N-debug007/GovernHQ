@@ -20,7 +20,7 @@ from typing import Literal, Optional
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from core.auth import auth_context, get_db
+from backend.core.auth import auth_context, get_db
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
@@ -251,7 +251,7 @@ def review_event(
         return _err("action must be 'allow' or 'block'", 400)
 
     # Log the human decision as a new ledger entry
-    from gate.logging import log_gate_execution
+    from backend.gate.logging import log_gate_execution
     log_gate_execution(
         agent_id=original["agent_id"],
         intent=original["action"],
