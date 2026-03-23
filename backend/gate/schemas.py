@@ -17,5 +17,5 @@ class GateEvaluateResponse(BaseModel):
     risk_score: float
     reason: str
     policy_matches: list[str] = Field(default_factory=list)
-
+    # Risk score breakdown for explainability and auditing
     breakdown: dict[str, float] = Field(default_factory=dict)
