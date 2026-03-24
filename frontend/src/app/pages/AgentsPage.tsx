@@ -249,11 +249,35 @@ useEffect(() => {
                     <p className="text-[#94a3b8] text-[14px]">Risk Profile:</p>
                     <p className="text-white text-[14px] capitalize">{agents[selectedAgent].risk_profile}</p>
                   </div>
+                  {agents[selectedAgent].scope?.databases && (
+                    <div className="flex justify-between items-center">
+                      <p className="text-[#94a3b8] text-[14px]">Databases:</p>
+                      <p className="text-white text-[14px]">{agents[selectedAgent].scope.databases.join(', ')}</p>
+                    </div>
+                  )}
+                  {agents[selectedAgent].scope?.apis && (
+                    <div className="flex justify-between items-center">
+                      <p className="text-[#94a3b8] text-[14px]">APIs:</p>
+                      <p className="text-white text-[14px]">{agents[selectedAgent].scope.apis}</p>
+                    </div>
+                  )}
+                  {agents[selectedAgent].scope?.pii_level && (
+                    <div className="flex justify-between items-center">
+                      <p className="text-[#94a3b8] text-[14px]">PII Access:</p>
+                      <p className="text-white text-[14px]">{agents[selectedAgent].scope.pii_level}</p>
+                    </div>
+                  )}
+                  {agents[selectedAgent].scope?.max_rows && (
+                    <div className="flex justify-between items-center">
+                      <p className="text-[#94a3b8] text-[14px]">Max rows/query:</p>
+                      <p className="text-white text-[14px]">{agents[selectedAgent].scope.max_rows}</p>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <p className="text-[#94a3b8] text-[14px]">External calls:</p>
                     <div className="flex items-center gap-[8px]">
-                      <div className="size-[8px] rounded-full bg-[#ef4444]" />
-                      <p className="text-white text-[14px]">blocked</p>
+                      <div className={`size-[8px] rounded-full ${agents[selectedAgent].scope?.external_calls ? 'bg-[#10b981]' : 'bg-[#ef4444]'}`} />
+                      <p className="text-white text-[14px]">{agents[selectedAgent].scope?.external_calls ? 'allowed' : 'blocked'}</p>
                     </div>
                   </div>
                 </div>
