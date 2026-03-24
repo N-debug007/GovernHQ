@@ -143,17 +143,26 @@ useEffect(() => {
           <div className="p-[48px] relative z-10">
 
             {/* Agent Name Header */}
-            <div className="flex items-center gap-[12px] mb-[24px]">
-            <div className={`size-[12px] rounded-full ${agents[selectedAgent].status === 'active'
-              ? 'bg-[#10b981] shadow-[0_0_12px_rgba(16,185,129,0.6)]'
-              : 'bg-[#ef4444] shadow-[0_0_12px_rgba(239,68,68,0.6)]'}`} />
-            <h2 className="font-bold text-white text-[24px] tracking-tight">{agents[selectedAgent].name}</h2>
-            {agents[selectedAgent].verified && (
-              <span className="bg-[#3b82f6]/20 border border-[#3b82f6]/50 text-[#3b82f6] text-[11px] font-semibold px-[8px] py-[3px] rounded-[6px] uppercase tracking-wider">
-                ✓ Verified
-              </span>
-            )}
-          </div>
+            <div className="flex items-center justify-between mb-[24px]">
+              <div className="flex items-center gap-[12px]">
+                <div className={`size-[12px] rounded-full ${agents[selectedAgent].status === 'active'
+                  ? 'bg-[#10b981] shadow-[0_0_12px_rgba(16,185,129,0.6)]'
+                  : 'bg-[#ef4444] shadow-[0_0_12px_rgba(239,68,68,0.6)]'}`} />
+                <h2 className="font-bold text-white text-[24px] tracking-tight">{agents[selectedAgent].name}</h2>
+                {agents[selectedAgent].verified && (
+                  <span className="bg-[#3b82f6]/20 border border-[#3b82f6]/50 text-[#3b82f6] text-[11px] font-semibold px-[8px] py-[3px] rounded-[6px] uppercase tracking-wider">
+                    ✓ Verified
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setSelectedAgent(null)}
+                className="size-[32px] rounded-[8px] border border-[#334155]/50 hover:border-[#ef4444]/50 hover:bg-[#1e293b]/30 transition-all flex items-center justify-center group">
+                <svg className="size-[16px]" fill="none" viewBox="0 0 16 16">
+                  <path d="M12 4L4 12M4 4L12 12" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:stroke-[#ef4444] transition-colors" />
+                </svg>
+              </button>
+            </div>
 
             {/* Source Badge */}
             <div className="bg-gradient-to-br from-[#3b82f6]/10 to-transparent border border-[#3b82f6]/30 rounded-[16px] p-[24px] mb-[24px]">

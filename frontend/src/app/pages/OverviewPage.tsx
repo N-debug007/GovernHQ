@@ -11,58 +11,57 @@ export function OverviewPage() {
   const [pendingActions, setPendingActions] = useState<any[]>([]);
   const [metrics, setMetrics] = useState({ total: 0, allowed: 0, blocked: 0, paused: 0, agents_monitored: 0 });
 
+  const fetchDecisionLog = async (tok: string, agentMap: Record<string, string>) => {
+    const res = await apiGet('/monitoring/ledger?limit=10', tok);
+    if (res.data?.rows) {
+      const mapped = res.data.rows.map((row: any) => ({
+        agent: agentMap[row.agent_id] || row.agent_id?.slice(0, 8) || 'Unknown',
+        status: row.status === 'allow' ? 'green' : row.status === 'block' ? 'red' : 'orange',
+        description: row.action,
+        time: new Date(row.created_at).toLocaleTimeString(),
+        gateTime: row.metadata?.gate_ms || null,
+        reasoning: row.metadata?.reasoning || null,
+        blockReason: row.status === 'block' ? 'Blocked by policy.' : null,
+        pauseReason: row.status === 'pause' ? 'Action requires human review.' : null,
+        logId: row.id,
+      }));
+      setDecisionLog(mapped);
+      setPendingActions(mapped.filter((e: any) => e.status === 'orange').slice(0, 3));
+    }
+  };
+
   useEffect(() => {
     if (!token || isLoading) return;
 
-    // Fetch metrics for right sidebar stats
     apiGet('/monitoring/metrics', token).then(res => {
       if (res.data) setMetrics(res.data);
     });
 
-    // Fetch latest ledger entries for decision log
-    apiGet('/monitoring/ledger?limit=10', token).then(res => {
-      if (res.data?.rows) {
-        const mapped = res.data.rows.map((row: any) => ({
-          agent: row.agent_id?.slice(0, 8) || 'Unknown',
-          status: row.status === 'allow' ? 'green' : row.status === 'block' ? 'red' : 'orange',
-          description: row.action,
-          time: new Date(row.created_at).toLocaleTimeString(),
-          gateTime: row.metadata?.gate_ms || null,
-          reasoning: row.metadata?.reasoning || null,
-          blockReason: row.status === 'block' ? 'Blocked by policy.' : null,
-          pauseReason: row.status === 'pause' ? 'Action requires human review.' : null,
-          logId: row.id,
-        }));
-        setDecisionLog(mapped);
-        // Paused actions go to pending sidebar
-        setPendingActions(mapped.filter((e: any) => e.status === 'orange').slice(0, 3));
+    // Fetch agents first for name lookup, then ledger
+    apiGet('/agents', token).then(agentsRes => {
+      const map: Record<string, string> = {};
+      if (agentsRes.data) {
+        agentsRes.data.forEach((a: any) => { map[a.id] = a.name; });
       }
+      fetchDecisionLog(token, map);
     });
-  }, [token]);
-const handleReview = async (logId: string, action: 'allow' | 'block') => {
-  if (!token) return;
-  await apiPost(`/audit/review/${logId}`, token, {
-    action,
-    reason: `Human reviewed and ${action}ed the action`
-  });
-  // Refresh the decision log
-  const res = await apiGet('/monitoring/ledger?limit=10', token);
-  if (res.data?.rows) {
-    const mapped = res.data.rows.map((row: any) => ({
-      agent: row.agent_id?.slice(0, 8) || 'Unknown',
-      status: row.status === 'allow' ? 'green' : row.status === 'block' ? 'red' : 'orange',
-      description: row.action,
-      time: new Date(row.created_at).toLocaleTimeString(),
-      gateTime: row.metadata?.gate_ms || null,
-      reasoning: row.metadata?.reasoning || null,
-      blockReason: row.status === 'block' ? 'Blocked by policy.' : null,
-      pauseReason: row.status === 'pause' ? 'Action requires human review.' : null,
-      logId: row.id,
-    }));
-    setDecisionLog(mapped);
-    setPendingActions(mapped.filter((e: any) => e.status === 'orange').slice(0, 3));
-  }
-};
+  }, [token, isLoading]);
+
+  const handleReview = async (logId: string, action: 'allow' | 'block') => {
+    if (!token) return;
+    await apiPost(`/audit/review/${logId}`, token, {
+      action,
+      reason: `Human reviewed and ${action}ed the action`
+    });
+    apiGet('/agents', token).then(agentsRes => {
+      const map: Record<string, string> = {};
+      if (agentsRes.data) {
+        agentsRes.data.forEach((a: any) => { map[a.id] = a.name; });
+      }
+      fetchDecisionLog(token, map);
+    });
+  };
+
   const toggleLogItem = (index: number) => {
     const newExpanded = new Set(expandedLogItems);
     if (newExpanded.has(index)) newExpanded.delete(index);
@@ -147,7 +146,7 @@ const handleReview = async (logId: string, action: 'allow' | 'block') => {
                           <p className="text-[#94a3b8] text-[14px] mb-[12px]">{entry.pauseReason}</p>
                           <div className="flex gap-[12px]">
                             <button onClick={() => handleReview(entry.logId, 'allow')} className="flex-1 bg-gradient-to-r from-[#10b981] to-[#059669] text-white font-semibold text-[14px] py-[10px] px-[20px] rounded-[8px] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all">Allow</button>
-<button onClick={() => handleReview(entry.logId, 'block')} className="flex-1 bg-gradient-to-r from-[#ef4444] to-[#dc2626] text-white font-semibold text-[14px] py-[10px] px-[20px] rounded-[8px] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all">Block</button>
+                            <button onClick={() => handleReview(entry.logId, 'block')} className="flex-1 bg-gradient-to-r from-[#ef4444] to-[#dc2626] text-white font-semibold text-[14px] py-[10px] px-[20px] rounded-[8px] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all">Block</button>
                           </div>
                         </div>
                       )}
@@ -186,7 +185,7 @@ const handleReview = async (logId: string, action: 'allow' | 'block') => {
             ))}
           </div>
 
-          {/* Pending Actions — real paused decisions */}
+          {/* Pending Actions */}
           <div className="mb-[32px]">
             <h3 className="font-['Mulish:SemiBold',sans-serif] font-semibold text-white text-[18px] mb-[20px] tracking-tight">Pending Actions</h3>
             {pendingActions.length === 0 ? (
@@ -222,7 +221,11 @@ const handleReview = async (logId: string, action: 'allow' | 'block') => {
             <div className="relative z-10">
               <h3 className="font-semibold text-white text-[16px] mb-[12px]">Track agent actions</h3>
               <p className="text-[#94a3b8] text-[12px] mb-[24px] leading-[21px]">The permanent, tamper-proof record of every gate decision on every action.</p>
-              <button className="w-full bg-gradient-to-r from-[#3b82f6] to-[#6366f1] text-white font-semibold text-[13px] py-[12px] px-[24px] rounded-[10px] tracking-[1.5px] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all">VIEW LEDGER</button>
+              <button
+                onClick={() => window.location.href = '/ledger'}
+                className="w-full bg-gradient-to-r from-[#3b82f6] to-[#6366f1] text-white font-semibold text-[13px] py-[12px] px-[24px] rounded-[10px] tracking-[1.5px] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all">
+                VIEW LEDGER
+              </button>
             </div>
           </div>
         </div>

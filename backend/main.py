@@ -14,6 +14,7 @@ from backend.settings.router import router as settings_router
 from backend.webhooks.router import router as webhooks_router
 from backend.shield.router import router as shield_router
 from backend.audit.router import router as audit_router
+from backend.govern.router import router as govern_router
 
 app = FastAPI(title="GovernHQ Backend")
 app.add_middleware(
@@ -30,7 +31,7 @@ app.include_router(settings_router)
 app.include_router(webhooks_router)
 app.include_router(shield_router)
 app.include_router(audit_router)
-
+app.include_router(govern_router)
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):

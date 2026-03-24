@@ -20,6 +20,8 @@ export function ShieldPage() {
     avg_block_latency_ms: null,
     blocked_agents: 0,
   });
+  const [showProtectionControls, setShowProtectionControls] = useState(false);
+  const [showRightSidebar, setShowRightSidebar] = useState(true);
 
   useEffect(() => {
     if (!token || isLoading) return;
@@ -84,9 +86,17 @@ export function ShieldPage() {
 
       <div className="absolute left-[101px] right-0 top-0 bottom-0 flex">
         {/* Main Content */}
-        <div className="flex-1 min-w-0 overflow-y-auto" style={{ width: 'calc(66.667% - 33px)' }}>
+        <div className="flex-1 min-w-0 overflow-y-auto" style={{ width: showRightSidebar ? 'calc(66.667% - 33px)' : '100%' }}>
           <div className="p-[56px] pl-[39px] pr-[24px]">
-            <h1 className="font-['Mulish:Bold',sans-serif] font-bold text-white text-[28px] mb-[12px] tracking-tight">Shield</h1>
+            <div className="flex items-center justify-between mb-[12px]">
+              <h1 className="font-['Mulish:Bold',sans-serif] font-bold text-white text-[28px] tracking-tight">Shield</h1>
+              {!showRightSidebar && (
+                <button onClick={() => setShowRightSidebar(true)}
+                  className="bg-[#1e293b]/50 border border-[#334155]/30 hover:border-[#3b82f6]/50 text-[#94a3b8] hover:text-white text-[13px] font-semibold px-[16px] py-[8px] rounded-[8px] transition-all">
+                  Show Controls
+                </button>
+              )}
+            </div>
             <p className="font-['Mulish:SemiBold',sans-serif] font-semibold text-[#94a3b8] text-[16px] mb-[32px]">
               Real-time protection and monitoring for your AI agents
             </p>
@@ -184,75 +194,146 @@ export function ShieldPage() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="shrink-0 overflow-y-auto bg-gradient-to-br from-[#1e293b] to-[#0f172a] border-l border-[#1e293b]/50 shadow-[-12px_0_48px_0_rgba(0,0,0,0.7)] backdrop-blur-xl p-[48px] relative" style={{ width: 'calc(33.333% + 33px)' }}>
-          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#3b82f6]/10 blur-[120px] rounded-full pointer-events-none" />
-          <div className="space-y-[32px] relative z-10">
+        {showRightSidebar && (
+          <div className="shrink-0 overflow-y-auto bg-gradient-to-br from-[#1e293b] to-[#0f172a] border-l border-[#1e293b]/50 shadow-[-12px_0_48px_0_rgba(0,0,0,0.7)] backdrop-blur-xl p-[48px] relative" style={{ width: 'calc(33.333% + 33px)' }}>
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#3b82f6]/10 blur-[120px] rounded-full pointer-events-none" />
+            <div className="space-y-[32px] relative z-10">
 
-            {/* Protection Controls */}
-            <div className="bg-gradient-to-br from-[#1e293b]/60 to-[#0f172a]/40 border border-[rgba(51,65,85,0.4)] rounded-[16px] p-[24px]">
-              <h2 className="text-[#94a3b8] text-[12px] uppercase tracking-wide mb-[24px]">Protection Controls</h2>
-              <div className="space-y-[20px]">
-                <div>
-                  <label className="font-semibold text-white text-[14px] mb-[8px] block">Enforcement Mode</label>
-                  <select value={enforcementMode} onChange={(e) => setEnforcementMode(e.target.value)}
-                    className="w-full bg-[#0f172a]/50 border border-[#334155]/50 rounded-[8px] px-[12px] py-[10px] text-white text-[14px] focus:outline-none appearance-none cursor-pointer">
-                    <option>Strict</option>
-                    <option>Monitor</option>
-                    <option>Audit</option>
-                  </select>
+              {/* Close button for entire right sidebar */}
+              <div className="flex items-center justify-between">
+                <p className="text-[#94a3b8] text-[12px] uppercase tracking-wide">Controls & Info</p>
+                <button onClick={() => setShowRightSidebar(false)}
+                  className="size-[32px] rounded-[8px] border border-[#334155]/50 hover:border-[#ef4444]/50 transition-all flex items-center justify-center group">
+                  <svg className="size-[16px]" fill="none" viewBox="0 0 16 16">
+                    <path d="M12 4L4 12M4 4L12 12" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Protection Controls */}
+              <div className="bg-gradient-to-br from-[#1e293b]/60 to-[#0f172a]/40 border border-[rgba(51,65,85,0.4)] rounded-[16px] p-[24px]">
+                <div className="flex items-center justify-between mb-[24px]">
+                  <h2 className="text-[#94a3b8] text-[12px] uppercase tracking-wide">Protection Controls</h2>
+                  <button onClick={() => setShowProtectionControls(true)} className="size-[24px] rounded-[6px] border border-[#334155]/50 hover:border-[#3b82f6]/50 transition-all flex items-center justify-center">
+                    <svg className="size-[12px]" fill="none" viewBox="0 0 16 16">
+                      <path d="M4 8h8M8 4v8" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </button>
                 </div>
-                <div>
-                  <label className="font-semibold text-white text-[14px] mb-[8px] block">
-                    Risk Threshold <span className="text-[#f59e0b] ml-[8px] font-bold">{riskThreshold}%</span>
-                  </label>
-                  <input type="range" min="0" max="100" value={riskThreshold}
-                    onChange={(e) => setRiskThreshold(Number(e.target.value))}
-                    className="w-full h-[4px] rounded-full appearance-none cursor-pointer"
-                    style={{ background: `linear-gradient(to right, #f59e0b 0%, #f59e0b ${riskThreshold}%, #334155 ${riskThreshold}%, #334155 100%)` }} />
-                </div>
-                <div>
-                  <label className="font-semibold text-white text-[14px] mb-[8px] block">
-                    Anomaly Sensitivity <span className="text-[#ef4444] ml-[8px] font-bold">{anomalySensitivity}%</span>
-                  </label>
-                  <input type="range" min="0" max="100" value={anomalySensitivity}
-                    onChange={(e) => setAnomalySensitivity(Number(e.target.value))}
-                    className="w-full h-[4px] rounded-full appearance-none cursor-pointer"
-                    style={{ background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${anomalySensitivity}%, #334155 ${anomalySensitivity}%, #334155 100%)` }} />
+                <div className="space-y-[20px]">
+                  <div>
+                    <label className="font-semibold text-white text-[14px] mb-[8px] block">Enforcement Mode</label>
+                    <select value={enforcementMode} onChange={(e) => setEnforcementMode(e.target.value)}
+                      className="w-full bg-[#0f172a]/50 border border-[#334155]/50 rounded-[8px] px-[12px] py-[10px] text-white text-[14px] focus:outline-none appearance-none cursor-pointer">
+                      <option>Strict</option>
+                      <option>Monitor</option>
+                      <option>Audit</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-semibold text-white text-[14px] mb-[8px] block">
+                      Risk Threshold <span className="text-[#f59e0b] ml-[8px] font-bold">{riskThreshold}%</span>
+                    </label>
+                    <input type="range" min="0" max="100" value={riskThreshold}
+                      onChange={(e) => setRiskThreshold(Number(e.target.value))}
+                      className="w-full h-[4px] rounded-full appearance-none cursor-pointer"
+                      style={{ background: `linear-gradient(to right, #f59e0b 0%, #f59e0b ${riskThreshold}%, #334155 ${riskThreshold}%, #334155 100%)` }} />
+                  </div>
+                  <div>
+                    <label className="font-semibold text-white text-[14px] mb-[8px] block">
+                      Anomaly Sensitivity <span className="text-[#ef4444] ml-[8px] font-bold">{anomalySensitivity}%</span>
+                    </label>
+                    <input type="range" min="0" max="100" value={anomalySensitivity}
+                      onChange={(e) => setAnomalySensitivity(Number(e.target.value))}
+                      className="w-full h-[4px] rounded-full appearance-none cursor-pointer"
+                      style={{ background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${anomalySensitivity}%, #334155 ${anomalySensitivity}%, #334155 100%)` }} />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* How GovernHQ Protects */}
-            <div>
-              <h2 className="font-bold text-white text-[18px] mb-[24px]">How GovernHQ Protects</h2>
-              <div className="space-y-[16px]">
-                {[
-                  { num: '1', label: 'GATE', desc: 'Intercepts reasoning. Blocks bad actions. Agent keeps running.', stats: `${metrics.reasoning_evaluated || 0} evaluated · ${metrics.gate_blocked || 0} blocked · ${metrics.gate_paused || 0} paused` },
-                  { num: '2', label: 'MONITOR', desc: 'Watches reasoning patterns. Blocks bad agents.', stats: `${blockedAgents.length} agents blocked · ${metrics.anomalies_today || 0} anomalies today` },
-                  { num: '3', label: 'EMERGENCY', desc: 'Instantly blocks all agents.', stats: `Latency: ${metrics.avg_block_latency_ms ? `${metrics.avg_block_latency_ms}ms` : '~8ms'}` },
-                ].map((item) => (
-                  <div key={item.num} className="bg-[#0a1419]/60 border border-[#1e3a3f]/60 rounded-[12px] p-[20px]">
-                    <div className="flex items-start gap-[16px]">
-                      <span className="font-bold text-[#64748b] text-[28px] leading-none pt-[2px]">{item.num}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-[10px]">
-                          <h3 className="font-bold text-white text-[16px]">{item.label}</h3>
-                          <div className="flex items-center gap-[6px]">
-                            <div className="size-[8px] rounded-full bg-[#10b981]" />
-                            <span className="font-semibold text-[#10b981] text-[12px]">Active</span>
+              {/* How GovernHQ Protects */}
+              <div>
+                <h2 className="font-bold text-white text-[18px] mb-[24px]">How GovernHQ Protects</h2>
+                <div className="space-y-[16px]">
+                  {[
+                    { num: '1', label: 'GATE', desc: 'Intercepts reasoning. Blocks bad actions. Agent keeps running.', stats: `${metrics.reasoning_evaluated || 0} evaluated · ${metrics.gate_blocked || 0} blocked · ${metrics.gate_paused || 0} paused` },
+                    { num: '2', label: 'MONITOR', desc: 'Watches reasoning patterns. Blocks bad agents.', stats: `${blockedAgents.length} agents blocked · ${metrics.anomalies_today || 0} anomalies today` },
+                    { num: '3', label: 'EMERGENCY', desc: 'Instantly blocks all agents.', stats: `Latency: ${metrics.avg_block_latency_ms ? `${metrics.avg_block_latency_ms}ms` : '~8ms'}` },
+                  ].map((item) => (
+                    <div key={item.num} className="bg-[#0a1419]/60 border border-[#1e3a3f]/60 rounded-[12px] p-[20px]">
+                      <div className="flex items-start gap-[16px]">
+                        <span className="font-bold text-[#64748b] text-[28px] leading-none pt-[2px]">{item.num}</span>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-[10px]">
+                            <h3 className="font-bold text-white text-[16px]">{item.label}</h3>
+                            <div className="flex items-center gap-[6px]">
+                              <div className="size-[8px] rounded-full bg-[#10b981]" />
+                              <span className="font-semibold text-[#10b981] text-[12px]">Active</span>
+                            </div>
                           </div>
+                          <p className="text-[#94a3b8] text-[13px] mb-[10px]">{item.desc}</p>
+                          <p className="text-[#64748b] text-[11px]">{item.stats}</p>
                         </div>
-                        <p className="text-[#94a3b8] text-[13px] mb-[10px]">{item.desc}</p>
-                        <p className="text-[#64748b] text-[11px]">{item.stats}</p>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Protection Controls Modal */}
+      {showProtectionControls && (
+        <>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => setShowProtectionControls(false)} />
+          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] bg-gradient-to-br from-[#1e293b]/95 to-[#0f172a]/90 border border-[#334155]/50 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-xl rounded-[16px] p-[32px] z-50">
+            <div className="flex items-center justify-between mb-[8px]">
+              <h3 className="font-bold text-white text-[20px]">Protection Controls</h3>
+              <button onClick={() => setShowProtectionControls(false)} className="size-[32px] rounded-[8px] border border-[#334155]/50 hover:border-[#ef4444]/50 transition-all flex items-center justify-center">
+                <svg className="size-[16px]" fill="none" viewBox="0 0 16 16">
+                  <path d="M12 4L4 12M4 4L12 12" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-[#64748b] text-[13px] mb-[24px]">Adjust protection settings for your organization.</p>
+            <div className="space-y-[20px]">
+              <div>
+                <label className="font-semibold text-white text-[14px] mb-[8px] block">Enforcement Mode</label>
+                <select value={enforcementMode} onChange={(e) => setEnforcementMode(e.target.value)}
+                  className="w-full bg-[#0f172a]/50 border border-[#334155]/50 rounded-[8px] px-[12px] py-[10px] text-white text-[14px] focus:outline-none appearance-none cursor-pointer">
+                  <option>Strict</option>
+                  <option>Monitor</option>
+                  <option>Audit</option>
+                </select>
+              </div>
+              <div>
+                <label className="font-semibold text-white text-[14px] mb-[8px] block">
+                  Risk Threshold <span className="text-[#f59e0b] ml-[8px] font-bold">{riskThreshold}%</span>
+                </label>
+                <input type="range" min="0" max="100" value={riskThreshold}
+                  onChange={(e) => setRiskThreshold(Number(e.target.value))}
+                  className="w-full h-[4px] rounded-full appearance-none cursor-pointer"
+                  style={{ background: `linear-gradient(to right, #f59e0b 0%, #f59e0b ${riskThreshold}%, #334155 ${riskThreshold}%, #334155 100%)` }} />
+              </div>
+              <div>
+                <label className="font-semibold text-white text-[14px] mb-[8px] block">
+                  Anomaly Sensitivity <span className="text-[#ef4444] ml-[8px] font-bold">{anomalySensitivity}%</span>
+                </label>
+                <input type="range" min="0" max="100" value={anomalySensitivity}
+                  onChange={(e) => setAnomalySensitivity(Number(e.target.value))}
+                  className="w-full h-[4px] rounded-full appearance-none cursor-pointer"
+                  style={{ background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${anomalySensitivity}%, #334155 ${anomalySensitivity}%, #334155 100%)` }} />
+              </div>
+              <button onClick={() => setShowProtectionControls(false)}
+                className="w-full bg-gradient-to-r from-[#3b82f6] to-[#2563eb] text-white font-bold text-[14px] px-[24px] py-[12px] rounded-[8px] transition-all">
+                Save & Close
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Biometric Modal */}
       {showBiometricModal && (

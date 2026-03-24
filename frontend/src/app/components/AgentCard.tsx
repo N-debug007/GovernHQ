@@ -50,18 +50,16 @@ export function AgentCard({ name, identity, trust, gateRate, blockedToday, isSel
               </div>
             </div>
 
-            {/* Status Badge */}
-            <div className="mt-[12px] flex items-center gap-[8px]">
-              <div className={`flex-1 px-[12px] py-[6px] rounded-[6px] text-center ${identity === 'allowed'
-                  ? 'bg-[#10b981]/10 border border-[#10b981]/30'
-                  : 'bg-[#ef4444]/10 border border-[#ef4444]/30'
-                }`}>
-                <p className={`font-['Mulish:SemiBold',sans-serif] font-semibold text-[12px] uppercase tracking-wider ${identity === 'allowed' ? 'text-[#10b981]' : 'text-[#ef4444]'
-                  }`}>
-                  {identity}
-                </p>
-              </div>
-            </div>
+            {/* Status Badge — only show if blocked */}
+                {identity === 'blocked' && (
+                  <div className="mt-[12px] flex items-center gap-[8px]">
+                    <div className="flex-1 px-[12px] py-[6px] rounded-[6px] text-center bg-[#ef4444]/10 border border-[#ef4444]/30">
+                      <p className="font-['Mulish:SemiBold',sans-serif] font-semibold text-[12px] uppercase tracking-wider text-[#ef4444]">
+                        blocked
+                      </p>
+                    </div>
+                  </div>
+                )}
           </div>
         </div>
       </div>
