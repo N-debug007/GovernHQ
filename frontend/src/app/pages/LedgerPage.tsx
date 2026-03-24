@@ -23,11 +23,14 @@ export function LedgerPage() {
         const mapped = res.data.rows.map((row: any) => ({
           time: new Date(row.created_at).toLocaleTimeString(),
           agent: row.agent_id,
-         type: row.action_type || row.metadata?.type || 'AGENT_ACTION',
+          type: row.action_type || row.metadata?.type || 'AGENT_ACTION',
           intent: row.action,
           gate: row.metadata?.gate_ms ? `${row.metadata.gate_ms}ms` : '—',
           status: row.status === 'allow' ? 'green' : row.status === 'block' ? 'red' : 'orange',
           logId: row.id,
+          riskScore: row.metadata?.risk_score ?? null,
+          policyMatches: row.metadata?.policy_matches ?? [],
+          anomalyReason: row.metadata?.anomaly_reason ?? null,
         }));
         setAllEntries(mapped);
       }
@@ -58,7 +61,7 @@ export function LedgerPage() {
   };
 
   const agents = ['All Agents', ...Array.from(new Set(allEntries.map(e => e.agent)))];
-  const types = ['All Types', 'DB_QUERY', 'API_CALL', 'ANALYSIS', 'RESPONSE'];
+  const types = ['All Types', 'DB_QUERY', 'API_CALL', 'AGENT_ACTION', 'DB_WRITE', 'FILE_IO', 'NOTIFICATION'];
   const statuses = ['All Statuses', 'Allowed', 'Blocked', 'Paused'];
 
   const filteredEntries = allEntries.filter(entry => {
@@ -168,9 +171,9 @@ export function LedgerPage() {
                     <>
                       <tr key={index} className="border-b border-[#334155]/20 hover:bg-[#1e293b]/30 transition-all cursor-pointer" onClick={() => toggleEntry(index)}>
                         <td className="py-[16px] text-[#94a3b8] text-[14px] font-mono">{entry.time}</td>
-                        <td className="py-[16px] font-bold text-white text-[14px]">{entry.agent}</td>
+                        <td className="py-[16px] font-bold text-white text-[14px]">{entry.agent?.slice(0, 8)}...</td>
                         <td className="py-[16px] text-[#64748b] text-[13px] uppercase">{entry.type}</td>
-                        <td className="py-[16px] text-[#cbd5e1] text-[14px]">"{entry.intent}"</td>
+                        <td className="py-[16px] text-[#cbd5e1] text-[14px] max-w-[200px] truncate">"{entry.intent}"</td>
                         <td className="py-[16px] text-[#94a3b8] text-[14px]">{entry.gate}</td>
                         <td className="py-[16px] text-right">
                           <div className={`inline-block size-[10px] rounded-full ${
@@ -185,22 +188,43 @@ export function LedgerPage() {
                           <td colSpan={6} className="pb-[16px]">
                             <div className="p-[16px] bg-[#0f172a]/50 border border-[#334155]/30 rounded-[12px]">
                               {entry.status === 'green' && (
-                                <p className="text-[#94a3b8] text-[13px]">Reasoning approved. Action executed.</p>
+                                <div>
+                                  <p className="text-[#94a3b8] text-[13px]">Reasoning approved. Action executed.</p>
+                                  {entry.riskScore !== null && (
+                                    <p className="text-[#64748b] text-[12px] mt-[4px]">Risk score: <span className="text-[#10b981] font-mono">{Number(entry.riskScore).toFixed(2)}</span></p>
+                                  )}
+                                  {entry.gate !== '—' && <p className="text-[#64748b] text-[12px] mt-[4px]">Gate: {entry.gate}</p>}
+                                </div>
                               )}
                               {entry.status === 'red' && (
-                                <p className="text-[#ef4444] text-[13px]">Action blocked by policy. Action never executed. Agent still running.</p>
+                                <div>
+                                  <p className="text-[#ef4444] text-[13px] mb-[8px]">Action blocked by policy. Action never executed. Agent still running.</p>
+                                  {entry.riskScore !== null && (
+                                    <p className="text-[#64748b] text-[12px]">Risk score: <span className="text-[#ef4444] font-mono">{Number(entry.riskScore).toFixed(2)}</span></p>
+                                  )}
+                                  {entry.policyMatches?.length > 0 && (
+                                    <p className="text-[#64748b] text-[12px] mt-[4px]">Policy: {entry.policyMatches.join(', ')}</p>
+                                  )}
+                                  {entry.anomalyReason && (
+                                    <p className="text-[#f59e0b] text-[12px] mt-[4px]">Anomaly: {entry.anomalyReason}</p>
+                                  )}
+                                </div>
                               )}
                               {entry.status === 'orange' && (
                                 <div>
-                                  <p className="text-[#94a3b8] text-[13px] mb-[12px]">Action paused — requires human review.</p>
+                                  <p className="text-[#94a3b8] text-[13px] mb-[8px]">Action paused — requires human review.</p>
+                                  {entry.riskScore !== null && (
+                                    <p className="text-[#64748b] text-[12px] mb-[12px]">Risk score: <span className="text-[#f59e0b] font-mono">{Number(entry.riskScore).toFixed(2)}</span></p>
+                                  )}
+                                  {entry.policyMatches?.length > 0 && (
+                                    <p className="text-[#64748b] text-[12px] mb-[12px]">Policy: {entry.policyMatches.join(', ')}</p>
+                                  )}
                                   <div className="flex gap-[12px]">
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleReview(entry, 'allow'); }}
+                                    <button onClick={(e) => { e.stopPropagation(); handleReview(entry, 'allow'); }}
                                       className="flex-1 bg-gradient-to-r from-[#10b981] to-[#059669] text-white font-semibold text-[14px] py-[10px] px-[20px] rounded-[8px] transition-all">
                                       Allow
                                     </button>
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleReview(entry, 'block'); }}
+                                    <button onClick={(e) => { e.stopPropagation(); handleReview(entry, 'block'); }}
                                       className="flex-1 bg-gradient-to-r from-[#ef4444] to-[#dc2626] text-white font-semibold text-[14px] py-[10px] px-[20px] rounded-[8px] transition-all">
                                       Block
                                     </button>
