@@ -144,11 +144,16 @@ useEffect(() => {
 
             {/* Agent Name Header */}
             <div className="flex items-center gap-[12px] mb-[24px]">
-              <div className={`size-[12px] rounded-full ${agents[selectedAgent].status === 'active'
-                ? 'bg-[#10b981] shadow-[0_0_12px_rgba(16,185,129,0.6)]'
-                : 'bg-[#ef4444] shadow-[0_0_12px_rgba(239,68,68,0.6)]'}`} />
-              <h2 className="font-bold text-white text-[24px] tracking-tight">{agents[selectedAgent].name}</h2>
-            </div>
+            <div className={`size-[12px] rounded-full ${agents[selectedAgent].status === 'active'
+              ? 'bg-[#10b981] shadow-[0_0_12px_rgba(16,185,129,0.6)]'
+              : 'bg-[#ef4444] shadow-[0_0_12px_rgba(239,68,68,0.6)]'}`} />
+            <h2 className="font-bold text-white text-[24px] tracking-tight">{agents[selectedAgent].name}</h2>
+            {agents[selectedAgent].verified && (
+              <span className="bg-[#3b82f6]/20 border border-[#3b82f6]/50 text-[#3b82f6] text-[11px] font-semibold px-[8px] py-[3px] rounded-[6px] uppercase tracking-wider">
+                ✓ Verified
+              </span>
+            )}
+          </div>
 
             {/* Source Badge */}
             <div className="bg-gradient-to-br from-[#3b82f6]/10 to-transparent border border-[#3b82f6]/30 rounded-[16px] p-[24px] mb-[24px]">

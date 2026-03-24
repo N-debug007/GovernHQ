@@ -8,25 +8,29 @@ export function ShieldPage() {
   const [enforcementMode, setEnforcementMode] = useState('Strict');
   const [riskThreshold, setRiskThreshold] = useState(70);
   const [anomalySensitivity, setAnomalySensitivity] = useState(75);
-  const [failMode, setFailMode] = useState('Block');
-  const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false);
-  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [showBiometricModal, setShowBiometricModal] = useState(false);
   const [biometricJustification, setBiometricJustification] = useState('');
+  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [blockedAgents, setBlockedAgents] = useState<any[]>([]);
-  const [metrics, setMetrics] = useState({ total: 0, allowed: 0, blocked: 0, paused: 0 });
+  const [metrics, setMetrics] = useState<any>({
+    reasoning_evaluated: 0,
+    gate_blocked: 0,
+    gate_paused: 0,
+    anomalies_today: 0,
+    avg_block_latency_ms: null,
+    blocked_agents: 0,
+  });
 
   useEffect(() => {
     if (!token || isLoading) return;
 
-    // Fetch all agents and filter blocked ones
     apiGet('/agents', token).then(res => {
       if (res.data) {
         const blocked = res.data.filter((a: any) => a.status === 'blocked').map((a: any) => ({
           id: a.id,
           name: a.name,
-          reason: '"Agent blocked"',
-          blockedBy: 'Monitor',
+          reason: a.blocked_reason ? `"${a.blocked_reason}"` : '"Agent blocked"',
+          blockedBy: a.metadata?.blocked_by || 'Monitor',
           time: new Date(a.created_at || Date.now()).toLocaleTimeString(),
           details: `Risk profile: ${a.risk_profile}. Source: ${a.source}.`,
           secondaryInfo: 'Agent cannot reason or act until re-allowed.',
@@ -36,8 +40,7 @@ export function ShieldPage() {
       }
     });
 
-    // Fetch metrics
-    apiGet('/monitoring/metrics', token).then(res => {
+    apiGet('/shield/stats', token).then(res => {
       if (res.data) setMetrics(res.data);
     });
   }, [token, isLoading]);
@@ -49,13 +52,8 @@ export function ShieldPage() {
     setExpandedAgent(null);
   };
 
-  const handleBlockAllAgents = () => {
-    setShowBiometricModal(true);
-  };
-
   const handleBiometricConfirm = async () => {
     if (!biometricJustification.trim() || !token) return;
-    // Block all active agents
     const res = await apiGet('/agents', token);
     if (res.data) {
       const activeAgents = res.data.filter((a: any) => a.status === 'active');
@@ -65,7 +63,6 @@ export function ShieldPage() {
     }
     setShowBiometricModal(false);
     setBiometricJustification('');
-    // Refresh blocked agents
     const updated = await apiGet('/agents', token);
     if (updated.data) {
       setBlockedAgents(updated.data.filter((a: any) => a.status === 'blocked').map((a: any) => ({
@@ -101,12 +98,14 @@ export function ShieldPage() {
                 <div className="font-semibold text-[#94a3b8] text-[14px]">blocked<br />agents</div>
               </div>
               <div className="bg-gradient-to-br from-[#1e293b]/50 to-[#0f172a]/30 border border-[#475569] rounded-[12px] p-[21px]">
-                <div className="font-bold text-[#31ba96] text-[64px] leading-[64px] mb-[8px]">8ms</div>
+                <div className="font-bold text-[#31ba96] text-[64px] leading-[64px] mb-[8px]">
+                  {metrics.avg_block_latency_ms ? `${metrics.avg_block_latency_ms}ms` : '~8ms'}
+                </div>
                 <div className="font-semibold text-[#94a3b8] text-[14px] mb-[4px]">block<br />latency</div>
                 <div className="text-[#64748b] text-[11px]">target &lt;10ms</div>
               </div>
               <div className="bg-gradient-to-br from-[#1e293b]/50 to-[#0f172a]/30 border border-[#475569] rounded-[12px] p-[21px]">
-                <div className="font-bold text-white text-[64px] leading-[64px] mb-[8px]">{metrics.total}</div>
+                <div className="font-bold text-white text-[64px] leading-[64px] mb-[8px]">{metrics.reasoning_evaluated || 0}</div>
                 <div className="font-semibold text-[#94a3b8] text-[14px]">reasoning<br />evaluated<br />today</div>
               </div>
             </div>
@@ -127,16 +126,14 @@ export function ShieldPage() {
                 Instantly block every agent. Revoke all credentials. Stop all reasoning and actions.
               </p>
               <p className="italic text-[#64748b] text-[13px] mb-[20px]">Requires CISO biometric authentication</p>
-              <button onClick={handleBlockAllAgents} className="w-full bg-[#ef4444] hover:bg-[#dc2626] text-white font-bold text-[16px] px-[24px] py-[14px] rounded-[12px] transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+              <button onClick={() => setShowBiometricModal(true)} className="w-full bg-[#ef4444] hover:bg-[#dc2626] text-white font-bold text-[16px] px-[24px] py-[14px] rounded-[12px] transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)]">
                 Block All Agents
               </button>
             </div>
 
             {/* Blocked Agents List */}
             <div>
-              <div className="flex items-center gap-[10px] mb-[16px]">
-                <h3 className="font-bold text-white text-[16px]">Blocked Agents</h3>
-              </div>
+              <h3 className="font-bold text-white text-[16px] mb-[16px]">Blocked Agents</h3>
               <p className="text-[#64748b] text-[13px] mb-[20px]">Agents blocked entirely. Cannot reason or act until re-allowed.</p>
 
               {blockedAgents.length === 0 ? (
@@ -162,7 +159,6 @@ export function ShieldPage() {
                           </div>
                         </div>
                       </div>
-
                       {expandedAgent === agent.name && (
                         <div className="px-[18px] pb-[18px] border-t border-[#334155]/30">
                           <div className="mt-[16px] space-y-[12px]">
@@ -228,14 +224,12 @@ export function ShieldPage() {
 
             {/* How GovernHQ Protects */}
             <div>
-              <div className="flex items-center gap-[10px] mb-[24px]">
-                <h2 className="font-bold text-white text-[18px]">How GovernHQ Protects</h2>
-              </div>
+              <h2 className="font-bold text-white text-[18px] mb-[24px]">How GovernHQ Protects</h2>
               <div className="space-y-[16px]">
                 {[
-                  { num: '1', label: 'GATE', desc: 'Intercepts reasoning. Blocks bad actions. Agent keeps running.', stats: `${metrics.total} evaluated · ${metrics.blocked} blocked · ${metrics.paused} paused` },
-                  { num: '2', label: 'MONITOR', desc: 'Watches reasoning patterns. Blocks bad agents.', stats: `${blockedAgents.length} agents blocked` },
-                  { num: '3', label: 'EMERGENCY', desc: 'Instantly blocks all agents.', stats: 'Measured latency: 8ms' },
+                  { num: '1', label: 'GATE', desc: 'Intercepts reasoning. Blocks bad actions. Agent keeps running.', stats: `${metrics.reasoning_evaluated || 0} evaluated · ${metrics.gate_blocked || 0} blocked · ${metrics.gate_paused || 0} paused` },
+                  { num: '2', label: 'MONITOR', desc: 'Watches reasoning patterns. Blocks bad agents.', stats: `${blockedAgents.length} agents blocked · ${metrics.anomalies_today || 0} anomalies today` },
+                  { num: '3', label: 'EMERGENCY', desc: 'Instantly blocks all agents.', stats: `Latency: ${metrics.avg_block_latency_ms ? `${metrics.avg_block_latency_ms}ms` : '~8ms'}` },
                 ].map((item) => (
                   <div key={item.num} className="bg-[#0a1419]/60 border border-[#1e3a3f]/60 rounded-[12px] p-[20px]">
                     <div className="flex items-start gap-[16px]">

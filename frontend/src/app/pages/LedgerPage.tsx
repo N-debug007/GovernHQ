@@ -23,7 +23,7 @@ export function LedgerPage() {
         const mapped = res.data.rows.map((row: any) => ({
           time: new Date(row.created_at).toLocaleTimeString(),
           agent: row.agent_id,
-          type: row.metadata?.type || 'DB_QUERY',
+         type: row.action_type || row.metadata?.type || 'AGENT_ACTION',
           intent: row.action,
           gate: row.metadata?.gate_ms ? `${row.metadata.gate_ms}ms` : '—',
           status: row.status === 'allow' ? 'green' : row.status === 'block' ? 'red' : 'orange',
