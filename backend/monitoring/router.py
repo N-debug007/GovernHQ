@@ -153,9 +153,9 @@ def get_metrics(ctx: dict = Depends(auth_context)) -> JSONResponse:
     agents = agents_query.execute().data or []
 
     total   = len(agents)
-    allowed = sum(1 for a in agents if a.get("status") == "allow")
-    blocked = sum(1 for a in agents if a.get("status") == "block")
-    paused  = sum(1 for a in agents if a.get("status") == "pause")
+    allowed = sum(1 for a in agents if a.get("status") in ["allow", "allowed"])
+    blocked = sum(1 for a in agents if a.get("status") in ["block", "blocked"])
+    paused  = sum(1 for a in agents if a.get("status") in ["pause", "paused"])
 
     # -------------------------
     # 2) LEDGER (avg_gate_ms)
