@@ -95,7 +95,7 @@ def get_ledger(
 # ---------------------------------------------------------------------------
 # GET /monitoring/metrics
 # ---------------------------------------------------------------------------
-
+# old metrics 
 # @router.get("/metrics")
 # def get_metrics(ctx: dict = Depends(auth_context)) -> JSONResponse:
 #     org_id = ctx["organization_id"]
@@ -138,29 +138,34 @@ def get_ledger(
 
 @router.get("/metrics")
 def get_metrics(ctx: dict = Depends(auth_context)) -> JSONResponse:
-    org_id = ctx["organization_id"]
     db = get_db()
+  
+    org_id = ctx.get("organization_id") if ctx else None
 
-    agents_result = (
-        db.table("agents")
-        .select("id, status")
-        .eq("organization_id", org_id)
-        .execute()
-    )
-    agents = agents_result.data or []
+    # -------------------------
+    # 1) AGENTS (current state)
+    # -------------------------
+    agents_query = db.table("agents").select("id, status")
+
+    if org_id and isinstance(org_id, str) and len(org_id) > 0:
+        agents_query = agents_query.eq("organization_id", org_id)
+
+    agents = agents_query.execute().data or []
 
     total   = len(agents)
     allowed = sum(1 for a in agents if a.get("status") == "allow")
     blocked = sum(1 for a in agents if a.get("status") == "block")
     paused  = sum(1 for a in agents if a.get("status") == "pause")
 
-    ledger_result = (
-        db.table(_LEDGER)
-        .select("metadata")
-        .eq("organization_id", org_id)
-        .execute()
-    )
-    ledger_rows = ledger_result.data or []
+    # -------------------------
+    # 2) LEDGER (avg_gate_ms)
+    # -------------------------
+    ledger_query = db.table(_LEDGER).select("metadata")
+
+    if org_id and isinstance(org_id, str) and len(org_id) > 0:
+        ledger_query = ledger_query.eq("organization_id", org_id)
+
+    ledger_rows = ledger_query.execute().data or []
 
     gate_ms_values = [
         r["metadata"]["gate_ms"]
